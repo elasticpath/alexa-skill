@@ -5,7 +5,7 @@
   * Reference Alexa Skill
       * [Documentation Introduction](#documentation-introduction)
   * [Overview](#overview)
-  * [Setting up the Chatbot](#setting-up-the-chatbot)
+  * [Setting up the Skill](#setting-up-the-skill)
       * [Prerequisites](#prerequisites)
       * [Setting up a Development Environment](#setting-up-a-development-environment)
   * [Terms And Conditions](#terms-and-conditions)
