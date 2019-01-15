@@ -1,0 +1,20 @@
+{
+  "name": "elastic-path-reference-skill",
+  "version": "1.0.0",
+  "description": "Elastic Path Reference Alexa Skill",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha --recursive ../test"
+  },
+  "dependencies": {
+    "alexa-sdk": "^1.0.25",
+    "bluebird": "^3.5.1",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "striptags": "^3.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.15.0",
+    "eslint-config-google": "^0.9.1",
+    "mocha": "^5.2.0"
+  }
+}
