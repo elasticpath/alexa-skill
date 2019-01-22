@@ -20,7 +20,11 @@
             "add the item to my wish list",
             "add it to my wish list",
             "put it in my wish list",
-            "add it to wish list"
+            "add it to wish list",
+            "add the item to my wishlist",
+            "add it to my wishlist",
+            "put it in my wishlist",
+            "add it to wishlist"
           ]
         },
         {
@@ -64,6 +68,7 @@
         {
           "name": "AMAZON.HelpIntent",
           "samples": [
+            "help",
             "what do I do",
             "what can I do",
             "what can I do here",
@@ -91,10 +96,13 @@
         {
           "name": "CheckOutIntent",
           "samples": [
+            "I would like to checkout",
             "I'd like to check out",
             "let me check out",
             "i'm ready to check out",
-            "i'm ready to make my purchase"
+            "i'm ready to make my purchase",
+            "can I checkout",
+            "i am ready checkout"
           ]
         },
         {
@@ -300,27 +308,27 @@
             },
             {
               "name": {
-                "value": "one eleven"
+                "value": "tire"
               }
             },
             {
               "name": {
-                "value": "red wine"
+                "value": "wheel"
               }
             },
             {
               "name": {
-                "value": "white wine"
+                "value": "repair"
               }
             },
             {
               "name": {
-                "value": "sparkling wine"
+                "value": "service"
               }
             },
             {
               "name": {
-                "value": "dessert wine"
+                "value": "parts"
               }
             }
           ],

@@ -67,74 +67,39 @@ function findUriFromJson(data) {
 
 function findProductCode(itemJson) {
     const data = convertToObj(itemJson);
-    let   sku;
-    try {
-        sku = data._code[0].code;
-    } catch (err) {
-        sku = null;
-    }
-    return sku;
+    return (data._code) ? data._code[0].code : null;
 };
 
-function findProductDefinition(itemJson)
-{
-    let definition = {};
-    try {
+function findProductDefinition(itemJson) {
+    const definition = {
+        displayName: null,
+        details: []
+    };
+    if (itemJson._definition) {
         definition.displayName = itemJson._definition[0]['display-name'];
-    } catch (err) {
-        definition.displayName = null;
-    }
-
-    try {
         definition.details = itemJson._definition[0].details;
-    } catch (err) {
-        definition.details = [];
     }
 
     return definition;
 };
 
 function findProductPrice(data) {
-    let priceObj = {};
-
-    try {
+    const priceObj = {};
+    if (data._price) {
         priceObj.purchasePrice = data._price[0]['purchase-price'];
-    } catch (err) {
-        // Swallow errors. It doesn't have a price?
+        priceObj.listPrice = data._price[0]['list-price'];
     }
-
-    try {
-        priceObj.listPrice     = data._price[0]['list-price'];
-    } catch (err) {
-        // Swallow errors. 
-    }
-
     return priceObj;
 };
 
 function findProductAvailability(data) {
-    // TODO: Implement the product availibility...
     data = convertToObj(data);
-    let availabilityState;
-    if (data.hasOwnProperty('_availability')) {
-        availabilityState = findAvailibilityFromArray(data);
-    }
-    return availabilityState;
-};
-
-function findAvailibilityFromArray(data) {
-    const availabilityArray = data['_availability'];
-
-    for (let i = 0; i < availabilityArray.length; i++) {
-        if (availabilityArray[i].state !== undefined) {
-            return availabilityArray[i].state;
-        }
-    }
+    return (data._availability) ? data._availability[0].state : null;
 };
 
 function findProductBundles(data) {
     data = convertToObj(data);
-    if (data.hasOwnProperty('_definition._components')) {
+    if (data._definition && data._definition._components) {
         const bundles = data._definition[0]._components[0]._element;
         createBundleArray(bundles).then(
             (bundle) => {
@@ -154,7 +119,6 @@ function createBundleArray(bundles) {
             const displayName = bundle['display-name'];
             const details = bundle.details;
 
-            const standaloneItemHref = findStandaloneItemFromLinks(bundle.links);
             const elementObj = {
                 quantity,
                 displayName,
@@ -164,15 +128,6 @@ function createBundleArray(bundles) {
         });
         resolve(bundleArray);
     });
-};
-function findStandaloneItemFromLinks(links) {
-    for (let i = 0; i < links.length; i++) {
-        const currentLink = links[i];
-        if (currentLink.rel === 'standaloneitem') {
-            return currentLink;
-        }
-    }
-    return null;
 };
 
 function convertToObj(data) {

@@ -26,6 +26,9 @@ const humanizerSettings = {
 }
 
 const speechAssets = {
+    greeting: 'Welcome to Vestri Motors: electric vehicles for the modern consumer!',
+    description: 'Vestri Motors sells wheels, chargers, maintenance parts, and services for your electric car. The store also sells Vestri merchandise such as shirts, hats, and accessories.',
+    sendoff: 'Thank you for shopping with vestri motors!  Talk to you again soon.',
     foundItem: 'I found an item called <<itemName>>, would you like to add it to your cart? ',
     itemNotFound: [
         'I couldn\'t find that item in our store. ', 
@@ -129,7 +132,9 @@ const speechAssets = {
         'You have nothing in your cart to checkout. ',
         'Your cart is empty, add some items first. '
     ],
-
+    noItemsInCart: [
+        'Your cart is empty, add some items first. '
+    ],
     purchaseSuccess: [
         'Great!  Your purchase was successful. ',
         'Ok, your order has been placed. ',
@@ -146,12 +151,12 @@ const speechAssets = {
         'something went wrong. ',
         'that didn\'t work. '
     ],
-    cartError: 'hmm, something went wrong, and your cart has not been checked out. ',
+    cartError: 'hmm, something went wrong, and your order could not be completed. ',
     cantReadCart: 'I\'m sorry, there was a problem reading your cart. ',
     helpMessage: 'I can help you search, shop, learn about our products, or manage your cart or wishlist.',
     unhandled: [
-        'I don\'t know how to handle that request. ', 
-        'I\'m not sure how to handle that request. '
+        'I don\'t know how to handle that request. Please try again', 
+        'I\'m not sure how to handle that request. Please try again'
     ],
     prompts: {
         canIHelpYou: [
@@ -234,6 +239,18 @@ let cleanOutput = function(output) {
                 .replaceAll(/\s\s+/, " ") + ' ';
     return output;
 }
+
+assets.prototype.greeting = function() {
+    return `${speechAssets.greeting} ${this.howElseCanIHelp()}`;
+};
+
+assets.prototype.description = function() {
+    return speechAssets.description;
+};
+
+assets.prototype.sendoff = function() {
+    return speechAssets.sendoff;
+};
 
 /*
  * PROMPTS
@@ -547,6 +564,14 @@ assets.prototype.readyToCheckOut = function() {
 assets.prototype.noItemsToCheckOut = function() {
     return cleanOutput(
         pickVariation(speechAssets.noItemsToCheckOut)
+        + this.howElseCanIHelp()
+    );
+};
+
+
+assets.prototype.emptyCart = function() {
+    return cleanOutput(
+        pickVariation(speechAssets.noItemsInCart)
         + this.howElseCanIHelp()
     );
 };

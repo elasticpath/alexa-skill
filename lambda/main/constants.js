@@ -19,21 +19,33 @@
  *
  */
 
-module.exports.SessionState = {
-    SESSION_LAUNCH: 'SESSION_LAUNCH',
-    BROWSING: 'BROWSING',
-    READING_PROMOTION: 'READING_PROMOTION',
-    IN_CART: 'IN_CART',
-    DESCRIBING_PRODUCT: 'DESCRIBING_PRODUCT',
-    CHECKOUT: 'CHECKOUT',
-    WISHLIST: 'WISHLIST',
-    SESSION_END: 'SESSION_END'
-};
-
 module.exports.AmazonIntent = {
+    INTENT_REQUEST: 'IntentRequest',
     STOP: 'AMAZON.StopIntent',
     HELP: 'AMAZON.HelpIntent',
     CANCEL: 'AMAZON.CancelIntent',
     YES: 'AMAZON.YesIntent',
-    NO: 'AMAZON.NoIntent'
+    NO: 'AMAZON.NoIntent',
+    FALLBACK: 'AMAZON.FallbackIntent',
 };
+
+module.exports.ElasticPathIntents = {
+    ADD_TO_CART: 'AddToCartIntent',
+    ADD_TO_WISHLIST: 'AddToWishlistIntent',
+    CHECKOUT: "CheckOutIntent",
+    DESCRIBE_LISTED_PRODUCT: 'DescribeListedProductIntent',
+    DESCRIBE_PRODUCT: 'DescribeProductIntent',
+    GET_CART: 'GetCartIntent',
+    GET_WISLIST: 'GetWishlistIntent',
+    KEYWORD_SEARCH: 'KeywordSearchIntent',
+    MOVE_TO_CART: 'MoveToCartIntent',
+    MOVE_TO_WISHLIST: 'MoveToWishlistIntent',
+    NEXT_ITEM: 'NextItemIntent',
+    PREVIOUS_ITEM: 'PreviousItemIntent',
+    REMOVE_FROM_CART: 'RemoveFromCartIntent',
+    REMOVE_FROM_WISHLIST: 'RemoveFromWishlistIntent',
+    SKU_SEARCH: 'SkuCodeSearchIntent',
+    SPECIFIC_ITEM: 'SpecificItemIntent',
+};
+
+module.exports.PROD_DESCRIPTION = 'summary';
