@@ -19,9 +19,15 @@
  *
  */
 
-var request = require("request-promise-native");
+const request = require("request-promise-native");
+const Product = require("./parsing/product");
 
-var Product = require("./parsing/product");
+const CORTEX_USER = process.env.CORTEX_USER;
+const CORTEX_PASSWORD = process.env.CORTEX_PASSWORD;
+const CORTEX_URL = process.env.CORTEX_URL;
+const CORTEX_SCOPE = process.env.CORTEX_SCOPE;
+
+let cortex;
 
 function Cortex(baseUrl, scope, token) {
     this.cortexBaseUrl = baseUrl;
@@ -29,7 +35,7 @@ function Cortex(baseUrl, scope, token) {
     this.token = token;
 }
 
-Cortex.prototype.cortexLogin = function (email, password) {
+Cortex.prototype.cortexLogin = function (email, userPassword) {
     return request({
         uri: `${this.cortexBaseUrl}/oauth2/tokens`,
         method: 'POST',
@@ -38,15 +44,15 @@ Cortex.prototype.cortexLogin = function (email, password) {
             scope: this.scope,
             role: 'REGISTERED',
             username: email,
-            password: password
+            password: userPassword
         },
         json: true
     });
 };
 
-Cortex.prototype.cortexGet = function (uri) {
+Cortex.prototype.cortexGet = function (url) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'GET',
         headers: { 
             Authorization: `bearer ${this.token}`,
@@ -57,9 +63,9 @@ Cortex.prototype.cortexGet = function (uri) {
     });
 };
 
-Cortex.prototype.cortexPost = function (uri, data) {
+Cortex.prototype.cortexPost = function (url, data) {
     const options = {
-        uri: uri,
+        uri: url,
         method: 'POST',
         headers: {
             Authorization: `bearer ${this.token}`,
@@ -71,9 +77,9 @@ Cortex.prototype.cortexPost = function (uri, data) {
     return request(options);
 };
 
-Cortex.prototype.cortexPut = function (uri, data) {
+Cortex.prototype.cortexPut = function (url, data) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'PUT',
         headers: {
             Authorization: `bearer ${this.token}`,
@@ -84,9 +90,9 @@ Cortex.prototype.cortexPut = function (uri, data) {
     });
 };
 
-Cortex.prototype.cortexDelete = function (uri) {
+Cortex.prototype.cortexDelete = function (url) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'DELETE',
         headers: {
             Authorization: `bearer ${this.token}`,
@@ -105,13 +111,30 @@ Cortex.prototype.cortexDelete = function (uri) {
  * @return {[Cortex]}          [authenticated cortex instance]
  */
 function createCortexInstance(username, password, baseUrl, scope) {
-    var cortexInstance = new Cortex(baseUrl, scope);
-
-    return cortexInstance.cortexLogin(username, password)
+    return new Promise((resolve, reject) => {
+        const cortexInstance = new Cortex(baseUrl, scope);
+        cortexInstance.cortexLogin(username, password)
         .then((data) => {
             cortexInstance.token = data.access_token;
-            return cortexInstance;
-        });
+            resolve(cortexInstance);
+        })
+        .catch(error => reject(error));
+    });
+}
+
+// Temporary Singleton until account linking is done
+Cortex.getCortexInstance = function () {
+    return new Promise((resolve) => {
+        if (!cortex || cortex.token) {
+            createCortexInstance(CORTEX_USER, CORTEX_PASSWORD, CORTEX_URL, CORTEX_SCOPE)
+            .then((instance) => {
+                cortex = instance;
+                resolve(cortex);
+            })
+        } else {
+            resolve(cortex)
+        }
+    });
 }
 
 /**
@@ -123,7 +146,7 @@ function createCortexInstance(username, password, baseUrl, scope) {
 Cortex.prototype.cortexGetItem = function (sku, zoom) {
     return this.cortexGet(`${this.cortexBaseUrl}?zoom=lookups:itemlookupform:itemlookupaction`)
         .then((data) => {
-            let postUrl = `${data._lookups[0]._itemlookupform[0]._itemlookupaction[0].self}?followlocation`;
+            let postUrl = `${data._lookups[0]._itemlookupform[0]._itemlookupaction[0].self.href}?followlocation`;
             if (zoom) {
                 postUrl = `${postUrl}&zoom=${zoom}`;
             }
@@ -137,19 +160,19 @@ Cortex.prototype.cortexGetItem = function (sku, zoom) {
  * @param  {Integer} quantity - the amount that should be added to cart
  * @return {[type]}          null
  */
-Cortex.prototype.cortexAddToCart = function (sku, quantity) {
+Cortex.prototype.cortexAddToCart = function (sku, itemQuantity) {
     return new Promise((resolve, reject) => {
         this.cortexGetItem(sku, 'addtocartform')
         .then((data) => {
-            if (data._addtocartform.messages.length === 0) {
-                this.cortexPost(data._addtocartform.self.href, { quantity: quantity})
+            if (data._addtocartform[0].messages.length === 0) {
+                this.cortexPost(data._addtocartform[0].self.href, { quantity: itemQuantity})
                 .then(data => resolve(data))
                 .catch(error => reject(error));
             } else {
-
+                resolve(data);
             }
         })
-        .catch(error => { reject(error)});
+        .catch(error => { reject(error) });
     });
 };
 
@@ -166,21 +189,20 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
         ];
         this.cortexGet(`${this.cortexBaseUrl}/?zoom=${zoom.join()}`)
         .then((listOfLineItems) => {
-            var elements = listOfLineItems._defaultcart[0]._lineitems[0]._element;
-            var promises = [];
+            const elements = listOfLineItems._defaultcart[0]._lineitems[0]._element;
+            const promises = [];
             elements.forEach((element) => {
-                var code = element._item[0]._code[0].code;
+                const code = element._item[0]._code[0].code;
                 if (code === sku) {
                     promises.push(this.cortexDelete(element.self.href).then((data) => {
                         resolve(data);
                     }).catch((error) => {
-                        console.log(error);
                         reject(error);
                     }));
                 }
             });
             Promise.all(promises).then((result) => {
-                if (result === undefined || result.length == 0) {
+                if (result === undefined || result.length === 0) {
                     reject("Item not found in cart.");
                     
                 } else {
@@ -188,7 +210,6 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
                 }
             });
         }).catch((error) => {
-            console.log(error);
             reject(error);
         });
     });
@@ -229,24 +250,18 @@ Cortex.prototype.getItemsByKeyword = function (keyword) {
         const url = `${this.cortexBaseUrl}/searches/${this.scope}/keywords/form?followlocation&zoom=${zoom.join()}`;
         this.cortexPost(url, { keywords: keyword })
         .then((data) => {
-            var result = [];
+            const result = [];
             if (data._element && data._element.length > 0) {
                 data._element.forEach((itemJson) => {
-                    try {
-                        var parsedItem = Product.fromCortexJson(itemJson);
-                        if (parsedItem.isAvailable()) {
-                            result.push(parsedItem);
-                        }
-                    } catch (err) {
-                        console.log(err);
+                    const parsedItem = Product.fromCortexJson(itemJson);
+                    if (parsedItem.isAvailable()) {
+                        result.push(parsedItem);
                     }
                 });
             }
             resolve(result);
-        }).catch((error) => {
-            console.log(error);
-            reject(error);
-        });
+        })
+        .catch((error) => reject(error));
     });
 
 };
@@ -263,53 +278,58 @@ Cortex.prototype.cortexAddToWishlist = function (sku) {
                 const wishlistActionLink = data._addtowishlistform[0].links[0].href;
                 this.cortexPost(wishlistActionLink, {}).then((data) => {
                     resolve(data);
-                }).catch((error) => {
-                    reject(error);
-                });
+                })
+                .catch((error) => reject(error));
             }
-        }).catch((error) => {
-            console.log(error);
-            reject(error);
-        });
-
+        })
+        .catch((error) => reject(error));
     });
 }
 
 /**
- * Deletes an item from a qishlist based on sku.
+ * Deletes an item from a wishlist based on sku.
  * @param  {String} sku - sku code of the item in the wishlist that would like to be deleted
  * @return null
  */
 Cortex.prototype.cortexDeleteFromWishlist = function (sku) {
-    const zoom = [
-        'defaultwishlist:lineitems:element',
-        'defaultwishlist:lineitems:element:item:code'
-    ];
-    return this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultwishlist:lineitems:element',
+            'defaultwishlist:lineitems:element:item:code'
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
         .then((data) => {
-            var elements = data._defaultwishlist[0]._lineitems[0]._element;
-            var promises = [];
+            const elements = data._defaultwishlist[0]._lineitems[0]._element;
+            const promises = [];
             elements.forEach((element) => {
-                var code = element._item[0]._code[0].code;
+                const code = element._item[0]._code[0].code;
                 if (code === sku) {
-                    promises.push(this.cortexDelete(element.self.href));
+                    promises.push(this.cortexDelete(element.self.href)
+                        .then((data) => resolve(data))
+                        .catch((error) => reject(error))
+                    );
                 }
             });
-            return Promise.all(promises)
+            Promise.all(promises).then((result) => {
+                if (result === undefined || result.length === 0) {
+                    reject(result);
+                } else {
+                    resolve(result);
+                }
+            });
         })
-        .then((result) => {
-            resolve(result);
-        });
+        .catch((error) => reject(error));
+    }); 
 };
 
 Cortex.prototype.getWishlistItems = function () {
     return new Promise((resolve, reject) => {
         const zoom = [
-            'defaultwishlist:lineitems:element:item:definition',
-            'defaultwishlist:lineitems:element:item:code',
-            'defaultwishlist:lineitems:element:item:price',
             'defaultwishlist:lineitems:element:item:availability',
-            'defaultwishlist:lineitems:element:movetocartform',
+            'defaultwishlist:lineitems:element:item:code',
+            'defaultwishlist:lineitems:element:item:definition',
+            'defaultwishlist:lineitems:element:movetocartform:movetocartaction',
+            'defaultwishlist:lineitems:element:item:price',
         ];
         this.cortexGet(`${this.cortexBaseUrl}/?zoom=${zoom.join()}`)
         .then((data) => {
@@ -318,33 +338,55 @@ Cortex.prototype.getWishlistItems = function () {
                 const lineItems = data._defaultwishlist[0]._lineitems[0]._element;
                 lineItems.forEach((lineitem) => {
                     const item = Product.fromCortexJson(lineitem._item[0]);
-                    item.movetocartform = lineitem._movetocartform[0].links[0].href;
+                    item.movetocartform = lineitem._movetocartform[0]._movetocartaction[0].self.href;
                     wishlistItems.push(item);
                 });
             }
             resolve(wishlistItems);
         })
-        .catch((err) => {
-            reject(err);
-        });
+        .catch((err) => reject(err));
     });
 };
+
+Cortex.prototype.getCartItems = function () {
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultcart:lineitems:element:item:code',
+            'defaultcart:lineitems:element:item:definition',
+            'defaultcart:lineitems:element:movetowishlistform:movetowishlistaction',
+            'defaultcart:lineitems:element:price',
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+        .then((data) => resolve(data))
+        .catch((error) => reject(error));
+    });
+}
+
+Cortex.prototype.getTotals = function() {
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultcart',
+            'defaultcart:total'
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+        .then((data) => resolve(data))
+        .catch((error) => reject(error));
+    });
+}
 
 Cortex.prototype.cortexCheckout = function () {
     return this.cortexGet(`${this.cortexBaseUrl}?zoom=defaultcart:order:purchaseform`)
         .then((data) => {
-            var purchaseForm = data._defaultcart[0]._order[0]._purchaseform[0];
-
+            const purchaseForm = data._defaultcart[0]._order[0]._purchaseform[0];
             if (purchaseForm.messages && purchaseForm.messages.length > 0) {
-                for (var i=0; i < purchaseForm.messages.length; i++) {
-                    if (purchaseForm.messages[i].type === "needinfo") {
-                        return Promise.reject(purchaseForm.messages[i]);
+                for (const message of purchaseForm.messages) {
+                    if (message.type === "needinfo") {
+                        return Promise.reject(message);
                     }
                 }
             }
             return this.cortexPost(`${purchaseForm.links[0].href}?followlocation`);
         });
-};
+}
 
-module.exports.Cortex = Cortex;
-module.exports.createCortexInstance = createCortexInstance;
+module.exports = Cortex;

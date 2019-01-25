@@ -120,8 +120,8 @@
         {
           "name": "GetCartIntent",
           "samples": [
-            "What's in my newell cart",
-            "Tell me what I have in my newell cart",
+            "What is in my cart",
+            "Tell me what I have in my cart",
             "What's in my cart",
             "What items do I have in my cart",
             "list the items in my cart",

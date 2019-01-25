@@ -221,23 +221,16 @@ String.prototype.replaceAll = function(target, replacement) {
     return this.split(target).join(replacement);
 };
 
-let pickVariation = function(arrayOfResponses) {
+const pickVariation = function(arrayOfResponses) {
     if (Array.isArray(arrayOfResponses)) {
         return arrayOfResponses[Math.floor(Math.random() * arrayOfResponses.length)]
     }
-    else {
-        return arrayOfResponses;
-    }
+    return arrayOfResponses;
 }
 
-// Formatting function to make sure the output works well with Alexa (makes sure there
-// are spaces after periods, etc.)
-let cleanOutput = function(output) {
-    // This regex makes sure there's a space after periods, EXCEPT if followed by a number.
-    output = ' ' + output.replaceAll(/(?!\.[\d\.])\./, ". ")
-                .replaceAll('&', 'and')
-                .replaceAll(/\s\s+/, " ") + ' ';
-    return output;
+const cleanOutput = function(...output) {
+    // eslint-disable-next-line no-useless-escape
+    return ` ${output.join(' ').replaceAll('/(?!\.[\d\.])\./', '. ').replaceAll('&', 'and').replaceAll('/\s\s+/', ' ')} `;
 }
 
 assets.prototype.greeting = function() {
@@ -256,96 +249,50 @@ assets.prototype.sendoff = function() {
  * PROMPTS
  */
 assets.prototype.canIHelp = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.prompts.canIHelpYou)
-    );
+    return cleanOutput(pickVariation(speechAssets.prompts.canIHelpYou));
 };
 
 assets.prototype.howElseCanIHelp = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.prompts.howElseCanIHelp)
-    );
+    return cleanOutput(pickVariation(speechAssets.prompts.howElseCanIHelp));
 };
 
 assets.prototype.whatNext = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.prompts.whatNext)
-    );
+    return cleanOutput(pickVariation(speechAssets.prompts.whatNext));
 }
 
 /*
  * GENERIC ERROR MESSAGES
  */
 assets.prototype.somethingWentWrong = function() {
-    return cleanOutput(
-        this.appologeticFiller()
-        + pickVariation(speechAssets.somethingWentWrong)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.somethingWentWrong), this.howElseCanIHelp());
 };
 
 assets.prototype.unhandled = function() {
-    return cleanOutput(
-        this.appologeticFiller()
-        + pickVariation(speechAssets.unhandled)
-        + this.howElseCanIHelp());
+    return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.unhandled), this.howElseCanIHelp());
 };
 
 /*
  * HELP
  */
 assets.prototype.helpMessage = function() { 
-    return cleanOutput(
-        speechAssets.helpMessage
-        + this.whatNext()
-    );
+    return cleanOutput(speechAssets.helpMessage, this.whatNext());
 };
 
 /*
  * SEARCH
  */
 assets.prototype.nextItem = function(itemName) {
-    if (typeof itemName != 'string') {
-        throw new Error('assets.nextItem() expects a string. You passed ' + itemName);
-    }
-    
-    let response = this.positiveFiller(0.65);
-    try {
-        response += pickVariation(speechAssets.search.results.nextItem);
-        response = response.replace('<<itemName>>', itemName)
-                 + this.whatNext();
-    }
-    catch (err) {
-        console.log(err);
-        response = this.somethingWentWrong();
-    }
-    return cleanOutput(response);
+    const response = `${this.positiveFiller(0.65)} ${pickVariation(speechAssets.search.results.nextItem)}`;
+    return cleanOutput(response.replace('<<itemName>>', itemName), this.whatNext());
 }
 
 assets.prototype.previousItem = function(itemName) {
-    if (typeof itemName != 'string') {
-        throw new Error('assets.previousItem() expects a string. You assed ' + itemName);
-    }
-
-    let response = this.positiveFiller(0.65);
-    try {
-        response += pickVariation(speechAssets.search.results.previousItem);
-        response = response.replace('<<itemName>>', itemName)
-                 + this.whatNext();
-    }
-    catch (err) {
-        console.log(err);
-        response = this.somethingWentWrong();
-    }
-    return cleanOutput(response);
+    const response = `${this.positiveFiller(0.65)} ${pickVariation(speechAssets.search.results.previousItem)}`;
+    return cleanOutput(response.replace('<<itemName>>', itemName), this.whatNext());
 }
 
 assets.prototype.specificItem = function(itemName) {
-    if (typeof itemName != 'string') {
-        throw new Error('assets.specificItem() expects a string. You assed ' + itemName);
-    }
-
-    let response = this.positiveFiller();;
+    let response = this.positiveFiller();
     try {
         response += pickVariation(speechAssets.search.results.specificItem);
         response = response.replace('<<itemName>>', itemName)
@@ -359,72 +306,43 @@ assets.prototype.specificItem = function(itemName) {
 }
 
 assets.prototype.searchResults = function(numItems, item) {
-    if (typeof numItems != 'number' || typeof item != 'object') {
-        throw new Error('Assets.searchResults(numItems, item) requires "numItems" to be a number'
-                      + 'and "item" to be an object with property "name" of type string.');
+    if (numItems > 0) {
+        const result = (numItems === 1) ? pickVariation(speechAssets.search.results.oneResult) : pickVariation(speechAssets.search.results.manyResults);
+        const topItem = `${pickVariation(speechAssets.search.results.topItem)} ${pickVariation(speechAssets.search.nextOptions)} ${this.whatNext()}`;
+        return cleanOutput(this.positiveFiller(), result, topItem)
+            .replace('<<itemName>>', item.definition.displayName)
+            .replace('<<quantity>>', numItems);
     }
+    return this.noProductToDescribe();
     
-    var response = this.positiveFiller();
-    try {
-        if (numItems > 0) {
-            response += numItems === 1
-                     ? pickVariation(speechAssets.search.results.oneResult)
-                     : pickVariation(speechAssets.search.results.manyResults);
-
-            response += pickVariation(speechAssets.search.results.topItem)
-                     + pickVariation(speechAssets.search.nextOptions)
-                     + this.whatNext();
-   
-           response = response.replace('<<itemName>>', item.definition.displayName)
-                              .replace('<<quantity>>', numItems);
-        }
-        else {
-            response = this.noProductToDescribe();
-        }
-    }
-    catch (err) {
-        console.log(err);
-        response = this.somethingWentWrong();
-    }
-    return cleanOutput(response);
 };
 
 assets.prototype.describeProduct = function(description, item) {
-    var response = this.positiveFiller();
-    response += pickVariation(speechAssets.describeProduct)
+    const response = pickVariation(speechAssets.describeProduct)
         .replace('<<itemDescription>>', description)
         .replace('<<itemName>>', item.definition.displayName)
         .replace('<<itemPrice>>', item.price.purchasePrice[0].display);
 
-    return cleanOutput(response);
+    return cleanOutput(this.positiveFiller(), response);
 };
 
 assets.prototype.noProductToDescribe = function() {
-    return cleanOutput(
-        this.appologeticFiller()
-        + speechAssets.noProductToDescribe
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(this.appologeticFiller(), speechAssets.noProductToDescribe, this.howElseCanIHelp());
 };
 
 assets.prototype.itemFound = function(itemName) {
-    return cleanOutput(
-        speechAssets.foundItem.replace('<<itemName>>', itemName)
-    );
+    return cleanOutput(speechAssets.foundItem.replace('<<itemName>>', itemName));
 };
 
 assets.prototype.itemNotFound = function() {
-    var response = this.appologeticFiller()
-                 + pickVariation(speechAssets.itemNotFound)
-                 + this.howElseCanIHelp();
-    return cleanOutput(response);
+    return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.itemNotFound), this.howElseCanIHelp());
 };
 
 /*
  * CART
  */
-assets.prototype.cartDescription = function(names, promotionName) {
-    var speechResponse = 'You have '
+assets.prototype.cartDescription = function(names) {
+    let speechResponse = 'You have '
         + ((names.length === 0) ? 'no' : names.length) 
         + ((names.length === 1) ? ' item ' : ' items ') + 'in your cart.  ';
     if (names.length > 0) {
@@ -437,40 +355,24 @@ assets.prototype.cartDescription = function(names, promotionName) {
 };
 
 assets.prototype.movedToCart = function(item) {
-    var response;
-    try {
-        response = pickVariation(speechAssets.movedToCart)
-                    .replace('<<itemName>>', item.name)
-                    + this.howElseCanIHelp();
-    }
-    catch (err) {
-        console.log(err);
-    }
-
-    return cleanOutput(response);
+    const response = pickVariation(speechAssets.movedToCart)
+                    .replace('<<itemName>>', item.name);
+    return cleanOutput(response, this.howElseCanIHelp());
 };
 
 assets.prototype.itemNotAvailable = function() {
-    var response = this.appologeticFiller()
-                 + pickVariation(speechAssets.itemNotAvailable)
-                 + this.howElseCanIHelp();
-    return cleanOutput(response);
+    return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.itemNotAvailable), this.howElseCanIHelp());
 }
 
 assets.prototype.itemList = function(items) {
-    var numItems = 0;
-    var itemList = '';
-    for (var key in items) {
+    let numItems = 0;
+    let itemList = '';
+    for (const key in items) {
         if (items.hasOwnProperty(key)) {
             try {
-                /* Note: The ordering of operations here is intentional. If
-                there is an error getting appending the text to itemList, we
-                don't want to increment numItems. */
-                
                 itemList += 'Item ' + (numItems + 1) + ': ' + items[key].name.replace('&', 'and') + '; ';
                 numItems++;
-            }
-            catch (err) {
+            } catch (err) {
                 console.log(
                     'Error building item list.\n'
                     + 'Error: ' + JSON.stringify(err)
@@ -483,69 +385,43 @@ assets.prototype.itemList = function(items) {
 };
 
 assets.prototype.addedToCart = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.addedToCart)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(pickVariation(speechAssets.addedToCart), this.howElseCanIHelp());
 };
 
 assets.prototype.removedFromCart = function(item) {
-    var ret = pickVariation(speechAssets.removedFromCart)
-            .replace('<<itemName>>', item);
-    return cleanOutput(ret);
+    return cleanOutput(pickVariation(speechAssets.removedFromCart).replace('<<itemName>>', item));
 };
 
 assets.prototype.addToCartQuery = function() {
-    return cleanOutput(
-        this.positiveFiller()
-        + pickVariation(speechAssets.addItemToCart)
-    );
+    return cleanOutput(this.positiveFiller(), pickVariation(speechAssets.addItemToCart));
 };
 
 assets.prototype.cartError = function() {
-    return cleanOutput(
-        this.appologeticFiller()
-        + speechAssets.cartError
-    );
+    return cleanOutput(this.appologeticFiller(), speechAssets.cartError);
 };
 
 assets.prototype.cantReadCart = function() {
-    return cleanOutput(
-        this.appologeticFiller()
-        + speechAssets.cantReadCart
-    );
+    return cleanOutput(this.appologeticFiller(), speechAssets.cantReadCart);
 };
 
 /*
  * WISHLIST
  */
 assets.prototype.describeWishlist = function(items) {
-    var numItems = items.length;
-    var itemList = this.itemList(items);
-    var response =  'Your wishlist has ' + numItems + ((numItems === 1) ? ' item ' : ' items ') + ' in it. ';
-    response += itemList;
-    return response;
+    const itemList = this.itemList(items);
+    return `Your wishlist has ${items.length} ${(items.length === 1) ? ' item ' : ' items '} in it. ${itemList}`;
 };
 
 assets.prototype.addedToWishlist = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.addedToWishlist)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(pickVariation(speechAssets.addedToWishlist), this.howElseCanIHelp());
 };
 
-assets.prototype.movedToWishlist = function(item) {
-    var ret = pickVariation(speechAssets.movedToWishlist)
-            .replace('<<itemName>>', item);
-            + this.howElseCanIHelp();
-            
-    return cleanOutput(ret);
+assets.prototype.movedToWishlist = function(item) {            
+    return cleanOutput(pickVariation(speechAssets.movedToWishlist).replace('<<itemName>>', item), this.howElseCanIHelp());
 };
 
 assets.prototype.removedFromWishlist = function(item) {
-    var ret = pickVariation(speechAssets.removedFromWishlist)
-            .replace('<<itemName>>', item);
-    return cleanOutput(ret);
+    return cleanOutput(pickVariation(speechAssets.removedFromWishlist).replace('<<itemName>>', item));
 };
 
 /*
@@ -556,40 +432,27 @@ assets.prototype.likeToCheckout = function() {
 };
 
 assets.prototype.readyToCheckOut = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.readyToCheckOut)
-    );
+    return cleanOutput(pickVariation(speechAssets.readyToCheckOut));
 };
 
 assets.prototype.noItemsToCheckOut = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.noItemsToCheckOut)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(pickVariation(speechAssets.noItemsToCheckOut), this.howElseCanIHelp());
 };
 
-
 assets.prototype.emptyCart = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.noItemsInCart)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(pickVariation(speechAssets.noItemsInCart), this.howElseCanIHelp());
 };
 
 assets.prototype.fullCheckoutMessage = function(quantity, total) {
-    var itemString = (quantity === 1) ? ' item ' : ' items ';
-    var checkoutString = speechAssets.itemsInCart[Math.floor(Math.random() * speechAssets.itemsInCart.length)]
+    const checkoutString = speechAssets.itemsInCart[Math.floor(Math.random() * speechAssets.itemsInCart.length)]
         .replace('<<quantity>>', quantity)
-        .replace('<<items>>', itemString)
+        .replace('<<items>>', (quantity === 1) ? ' item ' : ' items ')
         .replace('<<total>>', total);
-    return checkoutString + ' ' + speechAssets.likeToCheckout;
+    return `${checkoutString} ${speechAssets.likeToCheckout}`;
 };
 
 assets.prototype.purchaseSuccess = function() {
-    return cleanOutput(
-        pickVariation(speechAssets.purchaseSuccess)
-        + this.howElseCanIHelp()
-    );
+    return cleanOutput(pickVariation(speechAssets.purchaseSuccess), this.howElseCanIHelp());
 };
 
 /*
@@ -601,14 +464,10 @@ assets.prototype.ummFiller = function(frequencyAdjustment) {
     if (!Number.isNaN(frequencyAdjustment)) {
         chance *= frequencyAdjustment;
     }
-
-    let response = '<prosody rate="slow">';
     if (Math.random() <= chance) {
-        response += pickVariation(speechAssets.fillers.umm)
-                 + pickVariation(speechAssets.fillers.punctuation);
+        return `<prosody rate="slow">${pickVariation(speechAssets.fillers.umm)} ${pickVariation(speechAssets.fillers.punctuation)}</prosody>`
     }
-    response += '</prosody>';
-    return response;
+    return '';
 }
 
 assets.prototype.positiveFiller = function(frequencyAdjustment) {
@@ -616,15 +475,10 @@ assets.prototype.positiveFiller = function(frequencyAdjustment) {
     if (!Number.isNaN(frequencyAdjustment)) {
         chance *= frequencyAdjustment;
     }
-
-    let response = '<prosody rate="fast">';
     if (Math.random() <= chance) {
-        response += this.ummFiller()
-                 + pickVariation(speechAssets.fillers.positive.concat(speechAssets.fillers.neutral))
-                 + pickVariation(speechAssets.fillers.punctuation);
+        return `<prosody rate="fast">${this.ummFiller()} ${pickVariation(speechAssets.fillers.positive.concat(speechAssets.fillers.neutral))} ${pickVariation(speechAssets.fillers.punctuation)}</prosody>`;
     }
-    response += '</prosody>';
-    return response;
+    return '';
 }
 
 assets.prototype.appologeticFiller = function(frequencyAdjustment) {
@@ -632,14 +486,10 @@ assets.prototype.appologeticFiller = function(frequencyAdjustment) {
     if (!Number.isNaN(frequencyAdjustment)) {
         chance *= frequencyAdjustment;
     }
-
-    let response = '';
     if (Math.random() <= chance) {
-        response += this.ummFiller()
-                 + pickVariation(speechAssets.fillers.appologetic.concat(speechAssets.fillers.neutral))
-                 + pickVariation(speechAssets.fillers.punctuation);
+        return `${this.ummFiller()} ${pickVariation(speechAssets.fillers.appologetic.concat(speechAssets.fillers.neutral))} ${pickVariation(speechAssets.fillers.punctuation)}`;
     }
-    return response;
+    return '';
 }
 
 module.exports = new assets();

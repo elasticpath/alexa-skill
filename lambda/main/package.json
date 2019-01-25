@@ -6,13 +6,12 @@
     "test": "./node_modules/mocha/bin/mocha --recursive ../test"
   },
   "dependencies": {
-    "ask-sdk": "^2.3.0",
+    "ask-sdk-core": "^2.3.0",
+    "ask-sdk-model": "^1.11.0",
     "request": "^2.87.0",
     "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
-    "eslint": "^4.15.0",
-    "eslint-config-google": "^0.9.1",
     "mocha": "^5.2.0"
   }
 }

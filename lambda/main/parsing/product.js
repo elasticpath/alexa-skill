@@ -19,7 +19,7 @@
  *
  */
 
-let Product = function() {};
+const Product = function() {};
 
 /**
  * Builds a Product domain object from a Cortex JSON response (either String, or
@@ -28,18 +28,13 @@ let Product = function() {};
  * NOTE: Does NOT guarantee that any elements are present.
  */
 Product.fromCortexJson = function(json) {
-    let itemJson    = convertToObj(json);
-    let product     = new Product();
+    const product     = new Product();
 
-    product.uri          = findUriFromJson(itemJson);
-    product.code         = findProductCode(itemJson);
-    product.definition   = findProductDefinition(itemJson);
-    product.availability = findProductAvailability(itemJson);
-    product.price        = findProductPrice(itemJson);
-    product.category     = null; // TODO: Fill this out later.
-
-    // FYI: This makes more Cortex calls
-    product.bundles      = findProductBundles(itemJson);
+    product.uri          = findUriFromJson(json);
+    product.code         = findProductCode(json);
+    product.definition   = findProductDefinition(json);
+    product.availability = findProductAvailability(json);
+    product.price        = findProductPrice(json);
 
     return product;
 }
@@ -65,10 +60,9 @@ function findUriFromJson(data) {
     }
 }
 
-function findProductCode(itemJson) {
-    const data = convertToObj(itemJson);
+function findProductCode(data) {
     return (data._code) ? data._code[0].code : null;
-};
+}
 
 function findProductDefinition(itemJson) {
     const definition = {
@@ -81,7 +75,7 @@ function findProductDefinition(itemJson) {
     }
 
     return definition;
-};
+}
 
 function findProductPrice(data) {
     const priceObj = {};
@@ -90,51 +84,10 @@ function findProductPrice(data) {
         priceObj.listPrice = data._price[0]['list-price'];
     }
     return priceObj;
-};
+}
 
 function findProductAvailability(data) {
-    data = convertToObj(data);
     return (data._availability) ? data._availability[0].state : null;
-};
-
-function findProductBundles(data) {
-    data = convertToObj(data);
-    if (data._definition && data._definition._components) {
-        const bundles = data._definition[0]._components[0]._element;
-        createBundleArray(bundles).then(
-            (bundle) => {
-                return bundle;
-            });
-    } else {
-        // bundle doesn't exist for item
-        return null;
-    }
-};
-
-function createBundleArray(bundles) {
-    return new Promise((resolve, reject) => {
-        const bundleArray = [];
-        bundles.forEach((bundle) => {
-            const quantity = bundle.quantity;
-            const displayName = bundle['display-name'];
-            const details = bundle.details;
-
-            const elementObj = {
-                quantity,
-                displayName,
-                details,
-            };
-            bundleArray.push(elementObj);
-        });
-        resolve(bundleArray);
-    });
-};
-
-function convertToObj(data) {
-    if (typeof data === 'string') {
-        return JSON.parse(data);
-    }
-    return data;
-};
+}
 
 module.exports  = Product;
