@@ -33,7 +33,8 @@ const NextItemHandler = {
             const attributes = attributesManager.getSessionAttributes();
             let index = attributes.searchResults.indexOf(attributes.requestedSku);
             if (index < attributes.searchResults.length - 1) {
-                let currentItemSku = attributes.searchResults[++index];
+                index += 1;
+                const currentItemSku = attributes.searchResults[index];
                 attributes.requestedSku = currentItemSku;
                 attributesManager.setSessionAttributes(attributes);
                 Cortex.getCortexInstance()

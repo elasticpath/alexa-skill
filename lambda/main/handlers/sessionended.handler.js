@@ -24,6 +24,7 @@ const SessionEndedHandler = {
         return requestEnvelope.request.type === 'SessionEndedRequest';
     },
     handle({requestEnvelope}) {
+        // eslint-disable-next-line no-console
         console.log(`Session ended with reason: ${requestEnvelope.request.reason}`);
     }
 }

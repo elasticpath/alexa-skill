@@ -33,7 +33,8 @@ const PreviousItemHandler = {
             const attributes = attributesManager.getSessionAttributes();
             let index = attributes.searchResults.indexOf(attributes.requestedSku);
             if (index > 0) {
-                attributes.requestedSku = attributes.searchResults[--index];
+                index -= 1;
+                attributes.requestedSku = attributes.searchResults[index];
                 attributesManager.setSessionAttributes(attributes);
                 Cortex.getCortexInstance()
                 .then((cortex) => cortex.getItemBySku(attributes.requestedSku))

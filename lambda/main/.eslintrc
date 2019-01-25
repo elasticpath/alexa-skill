@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "node"
+  ],
+  "globals": {},
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "eol-last": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "import/no-commonjs": false,
+    "max-len": [
+      "warn",
+      {
+        "code": 400,
+        "tabWidth": 4,
+        "ignoreComments": true
+      }
+    ],
+    "no-underscore-dangle": "off",
+    "no-plusplus": [2, { "allowForLoopAfterthoughts": true }]
+  }
+}

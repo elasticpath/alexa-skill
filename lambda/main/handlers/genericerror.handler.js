@@ -26,6 +26,7 @@ const GenericErrorHandler = {
         return true;
     },
     handle(input, error) {
+        // eslint-disable-next-line no-console
         console.log(error)
         return input.responseBuilder
             .speak(SpeechAssets.somethingWentWrong())

@@ -54,7 +54,7 @@ Cortex.prototype.cortexGet = function (url) {
     return request({
         uri: url,
         method: 'GET',
-        headers: { 
+        headers: {
             Authorization: `bearer ${this.token}`,
             'Content-type': 'application/json'
         },
@@ -204,7 +204,6 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
             Promise.all(promises).then((result) => {
                 if (result === undefined || result.length === 0) {
                     reject("Item not found in cart.");
-                    
                 } else {
                     resolve(result);
                 }
@@ -217,7 +216,7 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
 };
 
 /**
- * Gets a more detailed results of the item with zoom based on sku. 
+ * Gets a more detailed results of the item with zoom based on sku.
 * when called will provide the price of the object... NOTE this function is still WIP.  Should return all properties of product
 * @param  {String} sku            The sku of a particular product
 * @return {Promise} Returns promise, when resolved provides pricing for object
@@ -319,7 +318,7 @@ Cortex.prototype.cortexDeleteFromWishlist = function (sku) {
             });
         })
         .catch((error) => reject(error));
-    }); 
+    });
 };
 
 Cortex.prototype.getWishlistItems = function () {
