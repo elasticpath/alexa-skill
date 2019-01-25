@@ -21,52 +21,58 @@
 
 'use strict';
 
-const Alexa = require('alexa-sdk');
-const Cortex = require('./cortex.js');
-const states = require('./states/states.js');
-const SessionConstants = require('./states/session-states.js');
-const SessionState = SessionConstants.SessionState;
+const Alexa = require('ask-sdk-core');
+// Request Handlers
+const AddToCartHandler  = require('./handlers/addtocart.handler')
+const AddToWishlistHandler = require('./handlers/addtowishlist.handler')
+const CheckOutHandler = require('./handlers/checkout.handler')
+const ConfirmCheckoutHandler = require('./handlers/confirmcheckout.handler')
+const DescribeProductHandler = require('./handlers/describeproduct.handler')
+const DescribeListedProductHandler = require('./handlers/descibelistedproduct.handler')
+const GetCartHandler = require('./handlers/getcart.handler');
+const GetWishlistHandler = require('./handlers/getwishlist.handler');
+const HelpIntentHandler = require('./handlers/helpintent.handler');
+const KeywordSearchHandler = require('./handlers/keywordsearch.handler');
+const MoveToCartHandler= require('./handlers/movetocart.handler');
+const MoveToWishlistHandler = require('./handlers/movetowishlist.handler');
+const LaunchRequestHandler = require('./handlers/launchrequest.handler');
+const NextItemHandler = require('./handlers/nextitem.handler');
+const NoIntentHandler = require('./handlers/nointent.handler');
+const PreviousItemHandler = require('./handlers/previousitem.handler');
+const RemoveFromCartHandler = require('./handlers/removefromcart.handler');
+const RemoveFromWishlistHandler = require('./handlers/removefromwishlist.handler');
+const SessionEndedHandler = require('./handlers/sessionended.handler');
+const SpecificItemHandler = require('./handlers/specificitem.handler');
+const SkuCodeSearchHandler = require('./handlers/skucodesearch.handler');
+const StopSessionHandler = require('./handlers/stopsession.handler');
 
-const user = process.env['CORTEX_USER'];
-const pass = process.env['CORTEX_PASSWORD'];
-const cortexUrl = process.env['CORTEX_URL'];
-const scope = process.env['CORTEX_SCOPE'].toLowerCase();
+// Error Handlers
+const GenericErrorHandler = require('./handlers/genericerror.handler');
 
-/** brand assets */
-const BrandAssets = require('./branding/' + scope + '/assets.js');
-
-/**
- * main entrypoint for the skill
- */
-exports.handler = function (event, context) {
-    var alexa = Alexa.handler(event, context);
-
-    Cortex.createCortexInstance(user, pass, cortexUrl, scope)
-        .then((cortex) => {
-            states.forEach((state) => {
-                alexa.registerHandlers(state.handler(cortex, BrandAssets));
-            });
-            alexa.registerHandlers(newSessionHandler);
-            alexa.execute();
-        }).catch((err) =>
-            console.log(err)
-        );
-};
-
-/**
- * handler for new sessions.
- * serves as an entrypoint to the state machine.
- */
-const newSessionHandler = {
-
-    'NewSession': function () {
-        this.handler.state = SessionState.SESSION_LAUNCH;
-        this.emitWithState('LaunchRequest');
-    },
-
-    'SessionEndedRequest': function () {
-        this.response.speak('Thanks for shopping at Vestri Motors!');
-        this.emit(':responseReady');
-    }
-
-}; 
+exports.handler = Alexa.SkillBuilders.custom()
+    .addRequestHandlers(
+        AddToCartHandler,
+        AddToWishlistHandler,
+        ConfirmCheckoutHandler,
+        CheckOutHandler,
+        DescribeProductHandler,
+        DescribeListedProductHandler,
+        GetCartHandler,
+        GetWishlistHandler,
+        HelpIntentHandler,
+        KeywordSearchHandler,
+        MoveToCartHandler,
+        MoveToWishlistHandler,
+        LaunchRequestHandler,
+        NextItemHandler,
+        NoIntentHandler,
+        PreviousItemHandler,
+        RemoveFromCartHandler,
+        RemoveFromWishlistHandler,
+        SessionEndedHandler,
+        SpecificItemHandler,
+        SkuCodeSearchHandler,
+        StopSessionHandler
+    )
+    .addErrorHandlers(GenericErrorHandler)
+    .lambda();

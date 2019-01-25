@@ -19,21 +19,19 @@
  *
  */
 
-module.exports.SessionState = {
-    SESSION_LAUNCH: 'SESSION_LAUNCH',
-    BROWSING: 'BROWSING',
-    READING_PROMOTION: 'READING_PROMOTION',
-    IN_CART: 'IN_CART',
-    DESCRIBING_PRODUCT: 'DESCRIBING_PRODUCT',
-    CHECKOUT: 'CHECKOUT',
-    WISHLIST: 'WISHLIST',
-    SESSION_END: 'SESSION_END'
-};
+const SpeechAssets = require('../speech/assets');
 
-module.exports.AmazonIntent = {
-    STOP: 'AMAZON.StopIntent',
-    HELP: 'AMAZON.HelpIntent',
-    CANCEL: 'AMAZON.CancelIntent',
-    YES: 'AMAZON.YesIntent',
-    NO: 'AMAZON.NoIntent'
-};
+const GenericErrorHandler = {
+    canHandle() {
+        return true;
+    },
+    handle(input, error) {
+        console.log(error)
+        return input.responseBuilder
+            .speak(SpeechAssets.somethingWentWrong())
+            .reprompt(SpeechAssets.howElseCanIHelp())
+            .getResponse()
+    }
+}
+
+module.exports = GenericErrorHandler;

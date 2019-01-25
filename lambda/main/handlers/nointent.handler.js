@@ -19,14 +19,20 @@
  *
  */
 
-const browsing = require('./session-browsing.js');
-const launch = require('./session-launch.js');
-const cart = require('./session-in-cart.js');
-const wishlist = require('./session-wishlist.js');
-const promotion = require('./session-promotion.js');
-const checkout = require('./session-checkout.js');
-const end = require ('./session-end.js');
+const SpeechAssets = require('../speech/assets');
+const { isIntentRequestOfType } = require('../utils');
+const { AmazonIntent } = require('../constants');
 
-module.exports = [
-    browsing, launch, cart, wishlist, promotion, checkout, end
-];
+const NoIntentHandler = {
+    canHandle({requestEnvelope}) {
+        return isIntentRequestOfType(requestEnvelope, AmazonIntent.NO);
+    },
+    handle({responseBuilder}) {
+        return responseBuilder
+            .speak(SpeechAssets.howElseCanIHelp())
+            .reprompt(SpeechAssets.canIHelp())
+            .getResponse();
+    }
+}
+
+module.exports = NoIntentHandler;

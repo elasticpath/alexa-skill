@@ -19,10 +19,15 @@
  *
  */
 
-var request = require("request-promise");
-var Promise = require("bluebird");
+const request = require("request-promise-native");
+const Product = require("./parsing/product");
 
-var Product = require("./parsing/product");
+const CORTEX_USER = process.env.CORTEX_USER;
+const CORTEX_PASSWORD = process.env.CORTEX_PASSWORD;
+const CORTEX_URL = process.env.CORTEX_URL;
+const CORTEX_SCOPE = process.env.CORTEX_SCOPE;
+
+let cortex;
 
 function Cortex(baseUrl, scope, token) {
     this.cortexBaseUrl = baseUrl;
@@ -30,61 +35,70 @@ function Cortex(baseUrl, scope, token) {
     this.token = token;
 }
 
-Cortex.prototype.cortexLogin = function (email, password) {
+Cortex.prototype.cortexLogin = function (email, userPassword) {
     return request({
-        uri: this.cortexBaseUrl + '/oauth2/tokens',
+        uri: `${this.cortexBaseUrl}/oauth2/tokens`,
         method: 'POST',
         form: {
             grant_type: 'password',
             scope: this.scope,
             role: 'REGISTERED',
             username: email,
-            password: password
-        }
+            password: userPassword
+        },
+        json: true
     });
 };
 
-Cortex.prototype.cortexGet = function (uri) {
+Cortex.prototype.cortexGet = function (url) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'GET',
-        headers: { Authorization: 'bearer ' + this.token },
-        timeout: 9000
+        headers: { 
+            Authorization: `bearer ${this.token}`,
+            'Content-type': 'application/json'
+        },
+        timeout: 9000,
+        json: true
     });
 };
 
-Cortex.prototype.cortexPost = function (uri, data) {
-    return request({
-        uri: uri,
+Cortex.prototype.cortexPost = function (url, data) {
+    const options = {
+        uri: url,
         method: 'POST',
         headers: {
-            Authorization: 'bearer ' + this.token,
+            Authorization: `bearer ${this.token}`,
             'Content-type': 'application/json'
         },
-        body: JSON.stringify(data)
-    });
+        body: data,
+        json: true
+    }
+    return request(options);
 };
 
-Cortex.prototype.cortexPut = function (uri, data) {
+Cortex.prototype.cortexPut = function (url, data) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'PUT',
         headers: {
-            Authorization: 'bearer ' + this.token,
+            Authorization: `bearer ${this.token}`,
             'Content-type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: data,
+        json: true
     });
 };
 
-Cortex.prototype.cortexDelete = function (uri) {
+Cortex.prototype.cortexDelete = function (url) {
     return request({
-        uri: uri,
+        uri: url,
         method: 'DELETE',
         headers: {
-            Authorization: 'bearer ' + this.token,
+            Authorization: `bearer ${this.token}`,
             'Content-type': 'application/json'
         },
+        json: true
     });
 };
 
@@ -97,24 +111,31 @@ Cortex.prototype.cortexDelete = function (uri) {
  * @return {[Cortex]}          [authenticated cortex instance]
  */
 function createCortexInstance(username, password, baseUrl, scope) {
-    var cortexInstance = new Cortex(baseUrl, scope);
-
-    return cortexInstance.cortexLogin(username, password)
-        .then((loginData) => {
-            var data = convertToObj(loginData);
+    return new Promise((resolve, reject) => {
+        const cortexInstance = new Cortex(baseUrl, scope);
+        cortexInstance.cortexLogin(username, password)
+        .then((data) => {
             cortexInstance.token = data.access_token;
-            return cortexInstance;
-        });
+            resolve(cortexInstance);
+        })
+        .catch(error => reject(error));
+    });
 }
 
-Cortex.prototype.cortexFindLink = function (data, rel) {
-    for (var i = 0; i < data.links.length; i++) {
-        var link = data.links[i];
-        if (link.rel == rel) {
-            return link;
+// Temporary Singleton until account linking is done
+Cortex.getCortexInstance = function () {
+    return new Promise((resolve) => {
+        if (!cortex || cortex.token) {
+            createCortexInstance(CORTEX_USER, CORTEX_PASSWORD, CORTEX_URL, CORTEX_SCOPE)
+            .then((instance) => {
+                cortex = instance;
+                resolve(cortex);
+            })
+        } else {
+            resolve(cortex)
         }
-    }
-};
+    });
+}
 
 /**
  * function gets item information
@@ -123,19 +144,13 @@ Cortex.prototype.cortexFindLink = function (data, rel) {
  * @return {null}
  */
 Cortex.prototype.cortexGetItem = function (sku, zoom) {
-    return this.cortexGet(this.cortexBaseUrl + '/lookups/' + this.scope + '?zoom=itemlookupform')
-        .then((getItemData) => {
-            var data = convertToObj(getItemData);
-            var itemLookupActionUri = this.cortexFindLink(data._itemlookupform[0], 'itemlookupaction').href;
-            var postUrl = void 0;
-            if (zoom == null) {
-                postUrl = itemLookupActionUri + '?followlocation';
-            } else {
-                postUrl = itemLookupActionUri + '?followlocation&zoom=' + zoom;
+    return this.cortexGet(`${this.cortexBaseUrl}?zoom=lookups:itemlookupform:itemlookupaction`)
+        .then((data) => {
+            let postUrl = `${data._lookups[0]._itemlookupform[0]._itemlookupaction[0].self.href}?followlocation`;
+            if (zoom) {
+                postUrl = `${postUrl}&zoom=${zoom}`;
             }
-            return this.cortexPost(postUrl, {
-                code: sku
-            })
+            return this.cortexPost(postUrl, { code: sku });
         });
 };
 
@@ -145,25 +160,22 @@ Cortex.prototype.cortexGetItem = function (sku, zoom) {
  * @param  {Integer} quantity - the amount that should be added to cart
  * @return {[type]}          null
  */
-Cortex.prototype.cortexAddToCart = function (sku, quantity) {
-    var getInstanceId = function getInstanceId(uri) {
-        var instanceIdTemp = uri.split('/');
-        return instanceIdTemp[3].split('=')[0];
-    };
-
-    return this.cortexGetItem(sku, 'price,availability')
-        .then((itemCallbackData) => {
-            var data            = convertToObj(itemCallbackData);
-            var product         = Product.fromCortexJson(data);
-            var availability    = product.availability;
-            var instanceId      = getInstanceId(data.self.uri);
-            
-            cortexAddToCartHelper(this, instanceId, quantity);
-            return availability;
-        });
+Cortex.prototype.cortexAddToCart = function (sku, itemQuantity) {
+    return new Promise((resolve, reject) => {
+        this.cortexGetItem(sku, 'addtocartform')
+        .then((data) => {
+            if (data._addtocartform[0].messages.length === 0) {
+                this.cortexPost(data._addtocartform[0].self.href, { quantity: itemQuantity})
+                .then(data => resolve(data))
+                .catch(error => reject(error));
+            } else {
+                resolve(data);
+            }
+        })
+        .catch(error => { reject(error) });
+    });
 };
 
-// TODO: Does not work with configurable items
 /**
  * deletes the current item from cart.
  * @param  {String} sku - sku code of the item in the cart that would like to be deleted
@@ -171,24 +183,26 @@ Cortex.prototype.cortexAddToCart = function (sku, quantity) {
  */
 Cortex.prototype.cortexDeleteFromCart = function (sku) {
     return new Promise((resolve, reject) => {
-        var url = this.cortexBaseUrl + '/';
-        this.cortexGetZoomData(url, '?zoom=defaultcart:lineitems:element,defaultcart:lineitems:element:item:code').then((listOfLineItemsStr) => {
-            var listOfLineItems = convertToObj(listOfLineItemsStr);
-            var elements = listOfLineItems._defaultcart[0]._lineitems[0]._element;
-            var promises = [];
+        const zoom = [
+            'defaultcart:lineitems:element',
+            'defaultcart:lineitems:element:item:code'
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}/?zoom=${zoom.join()}`)
+        .then((listOfLineItems) => {
+            const elements = listOfLineItems._defaultcart[0]._lineitems[0]._element;
+            const promises = [];
             elements.forEach((element) => {
-                var code = element._item[0]._code[0].code;
+                const code = element._item[0]._code[0].code;
                 if (code === sku) {
                     promises.push(this.cortexDelete(element.self.href).then((data) => {
                         resolve(data);
                     }).catch((error) => {
-                        console.log(error);
                         reject(error);
                     }));
                 }
             });
             Promise.all(promises).then((result) => {
-                if (result === undefined || result.length == 0) {
+                if (result === undefined || result.length === 0) {
                     reject("Item not found in cart.");
                     
                 } else {
@@ -196,7 +210,6 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
                 }
             });
         }).catch((error) => {
-            console.log(error);
             reject(error);
         });
     });
@@ -204,23 +217,21 @@ Cortex.prototype.cortexDeleteFromCart = function (sku) {
 };
 
 /**
- * Cortex.Items
- * 
- */
-
-/**
- * Gets a more detailed results of the item with zoom. 
- * TODO: Rename this to something more valuable
+ * Gets a more detailed results of the item with zoom based on sku. 
 * when called will provide the price of the object... NOTE this function is still WIP.  Should return all properties of product
 * @param  {String} sku            The sku of a particular product
 * @return {Promise} Returns promise, when resolved provides pricing for object
 */
 Cortex.prototype.getItemBySku = function (sku) {
-    return this.cortexGetItem(sku, 'definition,code,price,definition:components:element,availability')
-        .then((itemData) => {
-            const newItem = Product.fromCortexJson(itemData);
-            return(newItem);
-        });
+    const zoom = [
+        'availability',
+        'code',
+        'definition',
+        'definition:components:element',
+        'price',
+    ];
+    return this.cortexGetItem(sku, zoom.join())
+        .then(itemData => Product.fromCortexJson(itemData));
 }
 
 /**
@@ -230,361 +241,152 @@ Cortex.prototype.getItemBySku = function (sku) {
  */
 Cortex.prototype.getItemsByKeyword = function (keyword) {
     return new Promise((resolve, reject) => {
-        const url = this.cortexBaseUrl + '/searches/' + this.scope
-            + '/keywords/form?followlocation&zoom='
-            + 'element:code,'
-            + 'element:definition,'
-            + 'element:price,'
-            + 'element:availability';
-        console.log(url)
-        this.cortexPost(url, { keywords: keyword }).then((res) => {
-            var data = convertToObj(res);
-
-            var result = [];
+        const zoom = [
+            'element:code',
+            'element:definition',
+            'element:price',
+            'element:availability'
+        ];
+        const url = `${this.cortexBaseUrl}/searches/${this.scope}/keywords/form?followlocation&zoom=${zoom.join()}`;
+        this.cortexPost(url, { keywords: keyword })
+        .then((data) => {
+            const result = [];
             if (data._element && data._element.length > 0) {
                 data._element.forEach((itemJson) => {
-
-                    try {
-                        var parsedItem = Product.fromCortexJson(itemJson);
-                        if (parsedItem.isAvailable()) {
-                            result.push(parsedItem);
-                        }
-                    } catch (err) {
-                        console.log(err);
+                    const parsedItem = Product.fromCortexJson(itemJson);
+                    if (parsedItem.isAvailable()) {
+                        result.push(parsedItem);
                     }
-
                 });
-                resolve(result);
-            } else {
-                resolve({});
             }
-        }).catch((error) => {
-            console.log('CORTEX::ITEMS::getItemsByKeyword()::ERROR::' + error);
-            reject(error);
-        });
+            resolve(result);
+        })
+        .catch((error) => reject(error));
     });
 
 };
 
 /**
- * TODO
  * Will add a particular item to the wishlist based on sku
  * @param {[type]} sku - the Item sku
  */
 Cortex.prototype.cortexAddToWishlist = function (sku) {
     return new Promise((resolve, reject) => {
-        this.cortexGetItem(sku, 'addtowishlistform').then((data) => {
-            data = convertToObj(data);
-            if (data.hasOwnProperty('_addtowishlistform')) {
-                const wishlistActionLink = data['_addtowishlistform'][0].links[0].href;
+        this.cortexGetItem(sku, 'addtowishlistform')
+        .then((data) => {
+            if (data._addtowishlistform) {
+                const wishlistActionLink = data._addtowishlistform[0].links[0].href;
                 this.cortexPost(wishlistActionLink, {}).then((data) => {
                     resolve(data);
-                }).catch((error) => {
-                    reject(error);
-                });
+                })
+                .catch((error) => reject(error));
             }
-        }).catch((error) => {
-            console.log(error);
-        });
-
+        })
+        .catch((error) => reject(error));
     });
 }
 
-// TODO: Does not work with configurable items
 /**
- * deletes the current item from wishlist.
+ * Deletes an item from a wishlist based on sku.
  * @param  {String} sku - sku code of the item in the wishlist that would like to be deleted
  * @return null
  */
 Cortex.prototype.cortexDeleteFromWishlist = function (sku) {
-    var url = this.cortexBaseUrl + '/';
-    return this.cortexGetZoomData(url, '?zoom=defaultwishlist:lineitems:element,defaultwishlist:lineitems:element:item:code')
-        .then((listOfLineItemsStr) => {
-            var listOfLineItems = convertToObj(listOfLineItemsStr);
-            var elements = listOfLineItems._defaultwishlist[0]._lineitems[0]._element;
-            var promises = [];
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultwishlist:lineitems:element',
+            'defaultwishlist:lineitems:element:item:code'
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+        .then((data) => {
+            const elements = data._defaultwishlist[0]._lineitems[0]._element;
+            const promises = [];
             elements.forEach((element) => {
-                var code = element._item[0]._code[0].code;
+                const code = element._item[0]._code[0].code;
                 if (code === sku) {
-                    promises.push(this.cortexDelete(element.self.href));
+                    promises.push(this.cortexDelete(element.self.href)
+                        .then((data) => resolve(data))
+                        .catch((error) => reject(error))
+                    );
                 }
             });
-            return Promise.all(promises)
+            Promise.all(promises).then((result) => {
+                if (result === undefined || result.length === 0) {
+                    reject(result);
+                } else {
+                    resolve(result);
+                }
+            });
         })
-        .then((result) => {
-            if (result === undefined || result.length == 0) {
-                return "Item not found in wishlist.";
-            } else {
-                return result;
-            }
-        })
+        .catch((error) => reject(error));
+    }); 
 };
 
-// TODO: Need to include error handling in this function.
-/**
- * Will get the list of wishlist items
- */
 Cortex.prototype.getWishlistItems = function () {
     return new Promise((resolve, reject) => {
-        this.cortexGetWishlist().then(
-            (wishlistZoomData) => {
-                const data = convertToObj(wishlistZoomData);
-                console.log(data);
-                if (!data.hasOwnProperty('_defaultwishlist')) {
-                    resolve({});
-                }
-
-                const lineItems = data['_defaultwishlist'][0]['_lineitems'][0]['_element'];
-                var promises = [];
-                let wishlistItem = {};
-
-                lineItems.forEach(
-                    (lineItem) => {
-                        const links = lineItem.links;
-                        const selfHref = lineItem.self.href;
-                        const currentItemUriHash = findInstanceIdFromHref(selfHref);
-
-                        links.forEach(
-                            (link) => {
-                                if (link.rel == 'item') {
-                                    promises.push(
-                                        this.cortexGetZoomData(link.href, '=?zoom=definition,code,price,definition:components:element,availability').then(
-                                            (data) => {
-                                                const newItem = Product.fromCortexJson(data);
-                                    
-                                                if (wishlistItem[currentItemUriHash] == undefined) {
-                                                    wishlistItem[currentItemUriHash] = {
-                                                        wishlistItem: newItem
-                                                    }
-                                                } else {
-                                                    wishlistItem[currentItemUriHash].wishlistItem = newItem;
-                                                }
-                                            }
-                                        )
-                                    );
-                                }
-
-                                if (link.rel == 'movetocartform') {
-                                    if (wishlistItem[currentItemUriHash] == undefined) {
-                                        wishlistItem[currentItemUriHash] = {
-                                            movetocartform: link.href
-                                        }
-                                    } else {
-                                        wishlistItem[currentItemUriHash].movetocartform = link.href;
-                                    }
-                                }
-                        });
-                    }
-                );
-
-                Promise.all(promises).then((results) => {
-                    resolve(wishlistItem);
-                }).catch((err) => {
-                    reject(err);
+        const zoom = [
+            'defaultwishlist:lineitems:element:item:availability',
+            'defaultwishlist:lineitems:element:item:code',
+            'defaultwishlist:lineitems:element:item:definition',
+            'defaultwishlist:lineitems:element:movetocartform:movetocartaction',
+            'defaultwishlist:lineitems:element:item:price',
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}/?zoom=${zoom.join()}`)
+        .then((data) => {
+            const wishlistItems = []
+            if (data._defaultwishlist) {
+                const lineItems = data._defaultwishlist[0]._lineitems[0]._element;
+                lineItems.forEach((lineitem) => {
+                    const item = Product.fromCortexJson(lineitem._item[0]);
+                    item.movetocartform = lineitem._movetocartform[0]._movetocartaction[0].self.href;
+                    wishlistItems.push(item);
                 });
-            });
+            }
+            resolve(wishlistItems);
+        })
+        .catch((err) => reject(err));
+    });
+};
+
+Cortex.prototype.getCartItems = function () {
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultcart:lineitems:element:item:code',
+            'defaultcart:lineitems:element:item:definition',
+            'defaultcart:lineitems:element:movetowishlistform:movetowishlistaction',
+            'defaultcart:lineitems:element:price',
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+        .then((data) => resolve(data))
+        .catch((error) => reject(error));
     });
 }
 
-Cortex.prototype.cortexGetWishlist = function () {
-    // TODO: This will get the initial zoom for the wishlist
-    var url = this.cortexBaseUrl;
-    return this.cortexGetZoomData(url + '/?zoom=', 'defaultwishlist:lineitems:element')
-}
-
-/**
- * Cortex.Cart
- * 
- */
-
-Cortex.prototype.cortexShoppingCartQuantity = function () {
-    var url = this.cortexBaseUrl + '/?zoom=defaultcart';
-    return this.cortexGet(url);
+Cortex.prototype.getTotals = function() {
+    return new Promise((resolve, reject) => {
+        const zoom = [
+            'defaultcart',
+            'defaultcart:total'
+        ];
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
+        .then((data) => resolve(data))
+        .catch((error) => reject(error));
+    });
 }
 
 Cortex.prototype.cortexCheckout = function () {
-    return this.cortexGetPurchaseForm()
-        .then((purchaseFormData) => {
-            var data = convertToObj(purchaseFormData);
-            var purchaseForm = data._defaultcart[0]._order[0]._purchaseform[0];
-
+    return this.cortexGet(`${this.cortexBaseUrl}?zoom=defaultcart:order:purchaseform`)
+        .then((data) => {
+            const purchaseForm = data._defaultcart[0]._order[0]._purchaseform[0];
             if (purchaseForm.messages && purchaseForm.messages.length > 0) {
-                for (var i=0; i < purchaseForm.messages.length; i++) {
-                    if (purchaseForm.messages[i].type === "needinfo") {
-                        return Promise.reject(purchaseForm.messages[i]);
+                for (const message of purchaseForm.messages) {
+                    if (message.type === "needinfo") {
+                        return Promise.reject(message);
                     }
                 }
             }
-
-            var purchaseFormURI = purchaseForm.links[0].href + '?followlocation';
-            return this.cortexPost(purchaseFormURI, {});
-        });
-};
-
-Cortex.prototype.cortexGetPurchaseForm = function () {
-    var zoom = '?zoom=defaultcart:order:purchaseform';
-    var url = this.cortexBaseUrl + zoom;
-    return this.cortexGet(url);
-};
-
-/**
- * fetches any applied discounts on the current cart either through promotions, discounts, or coupons
- * @return {null}
- */
-Cortex.prototype.getPromotionDiscountForCart = function () {
-    return Promise.all(
-            [this.getCartPromotion(),
-            this.getCartDiscount(),
-            this.getCouponCodeFromOrder()]
-        )
-        .then(function (results) {
-            var promotionDiscount = {
-                promotion: results[0],
-                discount: results[1],
-                couponCode: results[2]
-            };
-            return promotionDiscount;
+            return this.cortexPost(`${purchaseForm.links[0].href}?followlocation`);
         });
 }
 
-Cortex.prototype.getCartDiscount = function () {
-    var zoomUrl = this.cortexBaseUrl + '/?zoom=';
-    var zoom = 'defaultcart:discount';
-
-    return this.cortexGetZoomData(zoomUrl, zoom)
-        .then((discountData) => {
-            var data = convertToObj(discountData);
-            
-            try {
-                return data._defaultcart[0]._discount[0].discount[0].display;
-            } catch (err) {
-                // Swallow promise. Assume there's no discount.
-                return '$0.00';
-            }
-        });
-}
-
-Cortex.prototype.getCartPromotion = function () {
-    var zoomUrl = this.cortexBaseUrl + '/?zoom=';
-    var zoom = 'defaultcart:appliedpromotions:element';
-
-    return this.cortexGetZoomData(zoomUrl, zoom)
-        .then((promotionData) => {
-            var data = convertToObj(promotionData);
-            var nameArray = [];
-
-            try {
-                var elements = data._defaultcart[0]._appliedpromotions[0]._element;
-                for (var i = 0; i < elements.length; i++) {
-                    var currentElement = elements[i];
-                    var name = currentElement.name;
-                    nameArray.push(name);
-                }
-            } catch (err) {
-                console.log('ERROR in Cortex.prototype.getCartPromotion: Problem parsing promotions from JSON. Assuming none present.');
-            }
-
-            return nameArray;
-        });
-}
-/**
- * get public test function
- */
-Cortex.prototype.getCouponCodeFromOrder = function () {
-    var zoomUrl = this.cortexBaseUrl + '/?zoom=';
-    var zoom = 'defaultcart:order:couponinfo:coupon';
-
-    return this.cortexGetZoomData(zoomUrl, zoom)
-        .then((discountData) => {
-            var data = convertToObj(discountData);
-            var response;
-
-            try {
-                response = data._defaultcart[0]._order[0]._couponinfo[0]._coupon[0].code;
-            } catch (err) {
-                response = ' no coupons';
-            }
-
-            return response;
-        });
-}
-
-/**
- * Returns the amount of items within the current users cart
- * @return {null}
- */
-Cortex.prototype.getShoppingCartQuantity = function () {
-    return this.cortexShoppingCartQuantity()
-        .then((shoppingCartData) => {
-            var data = convertToObj(shoppingCartData);
-            var totalQuantity = data._defaultcart[0]['total-quantity'];
-            console.log('totalQuantity: ' + totalQuantity);
-            if (!Number.isNaN(totalQuantity)) {
-                return totalQuantity;
-            }
-            else {
-                return Promise.reject(totalQuantity);
-            }
-        });
-}
-/**
- * gets the total cost of the current items inside the cart
- * @return {[type]}                  [description]
- */
-Cortex.prototype.getShoppingCartTotal = function () {
-    return this.cortexShoppingCartLinePrice()
-        .then((returnData) => {
-            var data = convertToObj(returnData);
-            var total = data._defaultcart[0]._total[0].cost[0];
-            var display = total.display;
-            var returnObj = {
-                total: total,
-                display: display
-            };
-            return returnObj;
-        });
-}
-
-Cortex.prototype.cortexShoppingCartLinePrice = function () {
-    var url = this.cortexBaseUrl + '?zoom=defaultcart:total';
-    return this.cortexGet(url);
-};
-
-/**
- * In Cart
- */
-Cortex.prototype.cortexGetZoomData = function (url, zoom) {
-    var queryUrl = url + zoom;
-    queryUrl = queryUrl.replace('==', '=');
-    return this.cortexGet(queryUrl);
-};
-
-function cortexAddToCartHelper(cortex, itemCode, quantity) {
-    var addToCartUrl = cortex.cortexBaseUrl + '/carts/items/' + cortex.scope + '/' + itemCode + '=/form';
-    var dataPayload = { quantity: quantity };
-    cortex.cortexPost(addToCartUrl, dataPayload).then((data) => { }).catch((error) => { console.log(error) });
-};
-
-// This should just be a static function that is exported.
-function convertToObj(data) {
-    if (typeof data === 'string') {
-        return JSON.parse(data);
-    }
-    return data;
-};
-
-/**
- * Helpers for getWishlistItems
- * 
- */
-
-
-function findInstanceIdFromHref(href) {
-    const splitHref = href.split("/");
-    lastElement = splitHref[splitHref.length - 1];
-    lastElement = lastElement.replace(/=([^;]*)/g, '');
-    return lastElement;
-}
-
-module.exports.Cortex = Cortex;
-module.exports.createCortexInstance = createCortexInstance;
+module.exports = Cortex;

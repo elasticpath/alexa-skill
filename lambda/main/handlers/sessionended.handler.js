@@ -19,24 +19,13 @@
  *
  */
 
-const speechAssets = {
-    greeting: 'Welcome to Vestri Motors: electric vehicles for the modern consumer!',
-    description: 'Vestri Motors sells wheels, chargers, maintenance parts, and services for your electric car. The store also sells Vestri merchandise such as shirts, hats, and accessories.',
-    sendoff: 'Thank you for shopping with vestri motors!  Talk to you again soon.'
-};
+const SessionEndedHandler = {
+    canHandle({requestEnvelope}) {
+        return requestEnvelope.request.type === 'SessionEndedRequest';
+    },
+    handle({requestEnvelope}) {
+        console.log(`Session ended with reason: ${requestEnvelope.request.reason}`);
+    }
+}
 
-function brandAssets() {}
-
-brandAssets.prototype.greeting = function() {
-    return speechAssets.greeting;
-};
-
-brandAssets.prototype.description = function() {
-    return speechAssets.description;
-};
-
-brandAssets.prototype.sendoff = function() {
-    return speechAssets.sendoff;
-};
-
-module.exports = new brandAssets();
+module.exports = SessionEndedHandler;
