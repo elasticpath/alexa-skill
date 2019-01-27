@@ -23,7 +23,7 @@ const { AmazonIntent } = require('./constants');
 
 const isIntentRequestOfType = (requestEnvelope, ...intentTypes) => {
     if (requestEnvelope.request.type === AmazonIntent.INTENT_REQUEST) {
-        for (let type of intentTypes) {
+        for (const type of intentTypes) {
             if (requestEnvelope.request.intent.name === type) {
                 return true;
             }

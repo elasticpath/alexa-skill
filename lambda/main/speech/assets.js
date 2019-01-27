@@ -31,14 +31,14 @@ const speechAssets = {
     sendoff: 'Thank you for shopping with vestri motors!  Talk to you again soon.',
     foundItem: 'I found an item called <<itemName>>, would you like to add it to your cart? ',
     itemNotFound: [
-        'I couldn\'t find that item in our store. ', 
-        'I can\'t find that item. ', 
+        'I couldn\'t find that item in our store. ',
+        'I can\'t find that item. ',
         'That item doesn\'t seem to be in our store. ',
         'It looks like we don\'t carry that. '
     ],
     addItemToCart: [
-        'Would you like to add the item to your cart? ', 
-        'Should I add that item to your cart? ', 
+        'Would you like to add the item to your cart? ',
+        'Should I add that item to your cart? ',
         'Do you want to add it to your cart? '
     ],
     itemsInCart: [
@@ -88,7 +88,7 @@ const speechAssets = {
     },
 
     addedToCart: [
-        'Great!  I\'ve added it to your cart. ', 
+        'Great!  I\'ve added it to your cart. ',
         'Ok!  I\'ve added it to your cart. ',
         'Alright, it\'s been added to your cart. '
     ],
@@ -98,8 +98,8 @@ const speechAssets = {
         'I\'m out of those. '
     ],
     addedToWishlist: [
-        'Great!  I\'ve added it to your wishlist. ', 
-        'Ok!  I\'ve added it to your wishlist. ', 
+        'Great!  I\'ve added it to your wishlist. ',
+        'Ok!  I\'ve added it to your wishlist. ',
         'Alright, it\'s been added to your wishlist. '
     ],
     movedToWishlist: [
@@ -113,13 +113,13 @@ const speechAssets = {
         'Alright, <<itemName>> has been moved to your cart. '
     ],
     removedFromCart: [
-        'Ok, the item <<itemName>> has been removed from your cart. ', 
+        'Ok, the item <<itemName>> has been removed from your cart. ',
         'Alright, I\'ve removed <<itemName>> from your cart. ',
         'Ok, I\'ve removed <<itemName>> from your cart. '
     ],
     removedFromWishlist: [
-        'Ok, the item <<itemName>> has been removed from your wishlist. ', 
-        'Alright, I\'ve removed <<itemName>> from your wishlist. ', 
+        'Ok, the item <<itemName>> has been removed from your wishlist. ',
+        'Alright, I\'ve removed <<itemName>> from your wishlist. ',
         'Ok, I\'ve removed <<itemName>> from your cart. '
     ],
     readyToCheckOut: [
@@ -155,18 +155,18 @@ const speechAssets = {
     cantReadCart: 'I\'m sorry, there was a problem reading your cart. ',
     helpMessage: 'I can help you search, shop, learn about our products, or manage your cart or wishlist.',
     unhandled: [
-        'I don\'t know how to handle that request. Please try again', 
+        'I don\'t know how to handle that request. Please try again',
         'I\'m not sure how to handle that request. Please try again'
     ],
     prompts: {
         canIHelpYou: [
-            'How can I help you? ', 
+            'How can I help you? ',
             'What can I do for you? ',
             'How may I assist you? '
         ],
         howElseCanIHelp: [
-            'How else can I help you? ', 
-            'What else can I do for you? ', 
+            'How else can I help you? ',
+            'What else can I do for you? ',
             'How else may I assist you? '
         ],
         whatNext: [
@@ -215,11 +215,8 @@ const speechAssets = {
     }
 };
 
+// eslint-disable-next-line no-empty-function
 const assets = function() {};
-
-String.prototype.replaceAll = function(target, replacement) {
-    return this.split(target).join(replacement);
-};
 
 const pickVariation = function(arrayOfResponses) {
     if (Array.isArray(arrayOfResponses)) {
@@ -230,7 +227,7 @@ const pickVariation = function(arrayOfResponses) {
 
 const cleanOutput = function(...output) {
     // eslint-disable-next-line no-useless-escape
-    return ` ${output.join(' ').replaceAll('/(?!\.[\d\.])\./', '. ').replaceAll('&', 'and').replaceAll('/\s\s+/', ' ')} `;
+    return ` ${output.join(' ').replace(/(?!\.[\d\.])\./g, '. ').replace(/&/g, 'and').replace(/\s\s+/g, ' ')} `;
 }
 
 assets.prototype.greeting = function() {
@@ -274,7 +271,7 @@ assets.prototype.unhandled = function() {
 /*
  * HELP
  */
-assets.prototype.helpMessage = function() { 
+assets.prototype.helpMessage = function() {
     return cleanOutput(speechAssets.helpMessage, this.whatNext());
 };
 
@@ -292,17 +289,7 @@ assets.prototype.previousItem = function(itemName) {
 }
 
 assets.prototype.specificItem = function(itemName) {
-    let response = this.positiveFiller();
-    try {
-        response += pickVariation(speechAssets.search.results.specificItem);
-        response = response.replace('<<itemName>>', itemName)
-                 + this.whatNext();
-    }
-    catch (err) {
-        console.log(err);
-        response = this.somethingWentWrong();
-    }
-    return cleanOutput(response);
+    return cleanOutput(this.positiveFiller(), pickVariation(speechAssets.search.results.specificItem).replace('<<itemName>>', itemName), this.whatNext());
 }
 
 assets.prototype.searchResults = function(numItems, item) {
@@ -314,7 +301,6 @@ assets.prototype.searchResults = function(numItems, item) {
             .replace('<<quantity>>', numItems);
     }
     return this.noProductToDescribe();
-    
 };
 
 assets.prototype.describeProduct = function(description, item) {
@@ -343,7 +329,7 @@ assets.prototype.itemNotFound = function() {
  */
 assets.prototype.cartDescription = function(names) {
     let speechResponse = 'You have '
-        + ((names.length === 0) ? 'no' : names.length) 
+        + ((names.length === 0) ? 'no' : names.length)
         + ((names.length === 1) ? ' item ' : ' items ') + 'in your cart.  ';
     if (names.length > 0) {
         speechResponse += this.itemList(names);
@@ -365,23 +351,9 @@ assets.prototype.itemNotAvailable = function() {
 }
 
 assets.prototype.itemList = function(items) {
-    let numItems = 0;
-    let itemList = '';
-    for (const key in items) {
-        if (items.hasOwnProperty(key)) {
-            try {
-                itemList += 'Item ' + (numItems + 1) + ': ' + items[key].name.replace('&', 'and') + '; ';
-                numItems++;
-            } catch (err) {
-                console.log(
-                    'Error building item list.\n'
-                    + 'Error: ' + JSON.stringify(err)
-                    + '\nItems: ' + JSON.stringify(items)
-                );
-            }
-        }
-    }
-    return itemList.replace(/; $/, '. ');
+    const itemList = [];
+    items.forEach((item, index) => itemList.push(`Item ${index + 1}: ${item.name.replace('&', 'and')}`));
+    return `${itemList.join(';')}. `;
 };
 
 assets.prototype.addedToCart = function() {
@@ -416,7 +388,7 @@ assets.prototype.addedToWishlist = function() {
     return cleanOutput(pickVariation(speechAssets.addedToWishlist), this.howElseCanIHelp());
 };
 
-assets.prototype.movedToWishlist = function(item) {            
+assets.prototype.movedToWishlist = function(item) {
     return cleanOutput(pickVariation(speechAssets.movedToWishlist).replace('<<itemName>>', item), this.howElseCanIHelp());
 };
 

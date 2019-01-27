@@ -35,7 +35,7 @@ const GetWishlistHandler = {
             .then((items) => {
                 const attributes = attributesManager.getSessionAttributes();
                 const orderedWishlist = [];
-                for (let item of items) {
+                for (const item of items) {
                         orderedWishlist.push({
                             name: item.definition.displayName,
                             code: item.code,

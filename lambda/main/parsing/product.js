@@ -19,12 +19,13 @@
  *
  */
 
+// eslint-disable-next-line no-empty-function
 const Product = function() {};
 
 /**
  * Builds a Product domain object from a Cortex JSON response (either String, or
  * pre-parsed JSON). Gracefully handles missing zoom data from all elements.
- * 
+ *
  * NOTE: Does NOT guarantee that any elements are present.
  */
 Product.fromCortexJson = function(json) {

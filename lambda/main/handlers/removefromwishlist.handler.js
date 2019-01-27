@@ -38,7 +38,7 @@ const RemoveFromWishlistHandler = {
                 .then((cortex) => cortex.cortexDeleteFromWishlist(item.code))
                 .then(() => {
                     attributes.orderedWishlist.splice(itemIndex, 1);
-                    resolve(responseBuilder    
+                    resolve(responseBuilder
                         .speak(`${SpeechAssets.removedFromWishlist(item.name)} ${SpeechAssets.describeWishlist(attributes.orderedWishlist)}`)
                         .reprompt(SpeechAssets.howElseCanIHelp())
                         .getResponse());
