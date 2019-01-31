@@ -33,7 +33,7 @@ class AuthPage extends React.Component {
     super(props);
     const params = new URLSearchParams(props.location.search);
     const redirectUri = params.get('redirect_uri');
-    const state = params.get('state'); 
+    const authState = params.get('state');
     this.state = {
       email: '',
       password: '',
@@ -41,7 +41,7 @@ class AuthPage extends React.Component {
       failedLogin: '',
       succeededLogin: '',
       redirectUri,
-      state,
+      authState,
     };
 
     this.setPassword = this.setPassword.bind(this);
@@ -58,13 +58,15 @@ class AuthPage extends React.Component {
   }
 
   login() {
+    const {
+      email, password, redirectUri, authState,
+    } = this.state;
+
     this.setState({
       isLogging: true,
       failedLogin: '',
       succeededLogin: '',
     });
-
-    const { email, password, redirectUri, state } = this.state;
 
     loginRegistered(email, password).then((response) => {
       if (response && response !== 400 && response !== 401) {
@@ -74,8 +76,8 @@ class AuthPage extends React.Component {
           isLogging: false,
         });
         setTimeout(() => {
-          window.location = `${redirectUri}#state=${state}&authorization_code=${response}&token_type=Bearer`;
-        }, 5000);
+          window.location = `${redirectUri}#state=${authState}&access_token=${response}&token_type=Bearer`;
+        }, 3000);
       } else {
         this.setState({
           failedLogin: 'The email address or the password is incorrect',

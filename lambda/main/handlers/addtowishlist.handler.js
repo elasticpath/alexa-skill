@@ -46,7 +46,7 @@ const AddToWishlistHandler = {
                     .getResponse());
             }
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.cortexAddToWishlist(productSku))
+            .cortexAddToWishlist(productSku)
             .then(() => {
                 resolve(responseBuilder
                     .speak(SpeechAssets.addedToWishlist())

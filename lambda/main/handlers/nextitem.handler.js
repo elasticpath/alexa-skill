@@ -38,7 +38,7 @@ const NextItemHandler = {
                 attributes.requestedSku = currentItemSku;
                 attributesManager.setSessionAttributes(attributes);
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.getItemBySku(currentItemSku))
+                .getItemBySku(currentItemSku)
                 .then((item) => {
                     resolve(responseBuilder
                         .speak(SpeechAssets.nextItem(item.definition.displayName))

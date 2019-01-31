@@ -31,7 +31,7 @@ const GetWishlistHandler = {
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.getWishlistItems())
+            .getWishlistItems()
             .then((items) => {
                 const attributes = attributesManager.getSessionAttributes();
                 const orderedWishlist = [];

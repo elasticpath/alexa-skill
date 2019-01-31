@@ -19,10 +19,14 @@
  *
  */
 
+const Cortex = require('../cortex');
+
 const AuthInterceptor = {
     process({ attributesManager, requestEnvelope }) {
         if (!requestEnvelope.context.System.user.accessToken) {
             attributesManager.setRequestAttributes({ requiresLogin: true});
+        } else {
+            Cortex.getCortexInstance().token = requestEnvelope.context.System.user.accessToken
         }
         return;
     }

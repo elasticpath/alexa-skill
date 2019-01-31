@@ -31,7 +31,7 @@ const GetCartHandler = {
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.getCartItems())
+            .getCartItems()
             .then((data) => {
                 const attributes = attributesManager.getSessionAttributes();
                 const lineitems = (data._defaultcart) ? data._defaultcart[0]._lineitems[0]._element : [];

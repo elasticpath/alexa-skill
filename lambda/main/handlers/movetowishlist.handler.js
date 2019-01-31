@@ -35,7 +35,7 @@ const MoveToWishlistHandler = {
             const item = attributes.orderedCart[index];
             if (item) {
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.cortexPost(item.movetowishlist))
+                .cortexPost(item.movetowishlist)
                 .then(() => {
                     attributes.orderedCart.splice(index, 1);
                     attributesManager.setSessionAttributes(attributes);

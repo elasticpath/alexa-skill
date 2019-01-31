@@ -32,7 +32,7 @@ const SkuCodeSearchHandler = {
         return new Promise((resolve, reject) => {
             const sku = requestEnvelope.request.intent.slots.SkuCode.value;
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.getItemBySku(sku))
+            .getItemBySku(sku)
             .then((item) => {
                 resolve(responseBuilder
                     .speak(SpeechAssets.itemFound(item.displayName))

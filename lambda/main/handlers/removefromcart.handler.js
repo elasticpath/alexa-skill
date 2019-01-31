@@ -35,7 +35,7 @@ const RemoveFromCartHandler = {
             const item = (attributes.orderedCart && attributes.orderedCart[itemIndex]) ? attributes.orderedCart[itemIndex] : null;
             if (item) {
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.cortexDeleteFromCart(item.code))
+                .cortexDeleteFromCart(item.code)
                 .then(() => {
                     attributes.orderedCart.splice(itemIndex, 1);
                     attributesManager.setSessionAttributes(attributes);
