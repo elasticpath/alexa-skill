@@ -19,12 +19,19 @@
  *
  */
 
-@mainColor: #040060;
-@mainGrey: #d0d0d0;
-@mainTextColor: #333333;
-@complimentGrey: #f3f3f3;
-@mainBlueColor: #40b1f3;
-@complimentBlueColor: #00a3dd;
+const SpeechAssets = require('../speech/assets');
+const { Errors } = require('../constants');
 
-@mobileWidth: 768px;
-@tabletWidth: 1092px;
+const AccessDeniedHandler = {
+    canHandle(input, error) {
+        return error.name === Errors.STATUS_CODE_ERROR && error.statusCode === 401;
+    },
+    handle({ responseBuilder }) {
+        return responseBuilder
+            .speak(SpeechAssets.reauthenticate())
+            .withLinkAccountCard()
+            .getResponse();
+    }
+}
+
+module.exports = AccessDeniedHandler;

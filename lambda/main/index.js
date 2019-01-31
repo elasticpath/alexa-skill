@@ -48,6 +48,7 @@ const SkuCodeSearchHandler = require('./handlers/skucodesearch.handler');
 const StopSessionHandler = require('./handlers/stopsession.handler');
 
 // Error Handlers
+const AccessDeniedHandler = require('./handlers/accessdenied.handler');
 const GenericErrorHandler = require('./handlers/genericerror.handler');
 
 //Interceptors
@@ -80,5 +81,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         StopSessionHandler
     )
     .addRequestInterceptors(AuthInterceptor)
-    .addErrorHandlers(GenericErrorHandler)
+    .addErrorHandlers(
+        AccessDeniedHandler,
+        GenericErrorHandler
+    )
     .lambda();

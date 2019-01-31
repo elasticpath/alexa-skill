@@ -48,4 +48,8 @@ module.exports.ElasticPathIntents = {
     SPECIFIC_ITEM: 'SpecificItemIntent',
 };
 
+module.exports.Errors = {
+    STATUS_CODE_ERROR: 'StatusCodeError',
+};
+
 module.exports.PROD_DESCRIPTION = 'summary';
