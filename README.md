@@ -11,7 +11,6 @@
       * [Setting up the Skill](#setting-up-the-skill)
       * [Setting up the Lambda](#setting-up-the-lambda)
   * [Project Structure](#project-structure)
-  * [State Diagram](#state-diagram)
   * [Intents Reference](#intents-reference)
   * [Terms And Conditions](#terms-and-conditions)
 
@@ -52,16 +51,6 @@ The lambda function lives under `lambda/main`.
 You will find the Intent schema and all slot definitions for the skill under
 `models/en-US.json`.  Refer to the ask-cli documentation for more information
 about the intent schema.
-
-## State Diagram
-
-The Alexa skill moves between several different states, each associated with part of the shopping process. State is changed whenever a relevant intent is received. This allows us to deliver context-specific responses.
-
-The following diagram displays all of the states, along with the basic actions you can use to navigate between each of them. Arrows indicate movement between the skill's various states, with arrows that loop back on themselves used to indicate that a given action causes the skill to remain in the current state.
-
-![State Diagram](./assets/state-intent-diagram.png)
-
-_**Note:** The actions and states listed above have been named to be as human-readable as possible. The actual code for the skill uses a different set of names that are a little less immediately readable in this context. For a detailed list of the actual Intents, please see the [Intents Reference](#intents) section toward the end of this guide._
 
 ## Intents Reference
 
