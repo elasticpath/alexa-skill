@@ -22,33 +22,12 @@
 const request = require("request-promise-native");
 const Product = require("./parsing/product");
 
-const CORTEX_USER = process.env.CORTEX_USER;
-const CORTEX_PASSWORD = process.env.CORTEX_PASSWORD;
 const CORTEX_URL = process.env.CORTEX_URL;
-const CORTEX_SCOPE = process.env.CORTEX_SCOPE;
 
-let cortex;
-
-function Cortex(baseUrl, scope, token) {
+function Cortex(baseUrl, token) {
     this.cortexBaseUrl = baseUrl;
-    this.scope = scope;
     this.token = token;
 }
-
-Cortex.prototype.cortexLogin = function (email, userPassword) {
-    return request({
-        uri: `${this.cortexBaseUrl}/oauth2/tokens`,
-        method: 'POST',
-        form: {
-            grant_type: 'password',
-            scope: this.scope,
-            role: 'REGISTERED',
-            username: email,
-            password: userPassword
-        },
-        json: true
-    });
-};
 
 Cortex.prototype.cortexGet = function (url) {
     return request({
@@ -102,39 +81,11 @@ Cortex.prototype.cortexDelete = function (url) {
     });
 };
 
-/**
- * [createCortexInstance - Used to return an authenticated cortex instance.]
- * @param  {[String]} username [the username of EPSHOPPER]
- * @param  {[String]} password [the password of EPSHOPPER]
- * @param  {[String]} baseUrl  [the baseUrl of your Cortex instance ex. http://35.163.108.181:8080/cortex]
- * @param  {[String]} scope    [the scope of EPSHOPPER]
- * @return {[Cortex]}          [authenticated cortex instance]
- */
-function createCortexInstance(username, password, baseUrl, scope) {
-    return new Promise((resolve, reject) => {
-        const cortexInstance = new Cortex(baseUrl, scope);
-        cortexInstance.cortexLogin(username, password)
-        .then((data) => {
-            cortexInstance.token = data.access_token;
-            resolve(cortexInstance);
-        })
-        .catch(error => reject(error));
-    });
-}
-
-// Temporary Singleton until account linking is done
-Cortex.getCortexInstance = function () {
-    return new Promise((resolve) => {
-        if (!cortex || cortex.token) {
-            createCortexInstance(CORTEX_USER, CORTEX_PASSWORD, CORTEX_URL, CORTEX_SCOPE)
-            .then((instance) => {
-                cortex = instance;
-                resolve(cortex);
-            })
-        } else {
-            resolve(cortex)
-        }
-    });
+Cortex.getCortexInstance = function() {
+    if (!Cortex.instance) {
+        Cortex.instance = new Cortex(CORTEX_URL);
+    }
+    return Cortex.instance;
 }
 
 /**
@@ -240,14 +191,17 @@ Cortex.prototype.getItemBySku = function (sku) {
  */
 Cortex.prototype.getItemsByKeyword = function (keyword) {
     return new Promise((resolve, reject) => {
-        const zoom = [
-            'element:code',
-            'element:definition',
-            'element:price',
-            'element:availability'
-        ];
-        const url = `${this.cortexBaseUrl}/searches/${this.scope}/keywords/form?followlocation&zoom=${zoom.join()}`;
-        this.cortexPost(url, { keywords: keyword })
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=searches:keywordsearchform:itemkeywordsearchaction`)
+        .then(data => {
+            const zoom = [
+                'element:code',
+                'element:definition',
+                'element:price',
+                'element:availability'
+            ];
+            const url = data._searches[0]._keywordsearchform[0]._itemkeywordsearchaction[0].self.href;
+            return this.cortexPost(`${url}?followlocation&zoom=${zoom.join()}`, { keywords: keyword });
+        })
         .then((data) => {
             const result = [];
             if (data._element && data._element.length > 0) {

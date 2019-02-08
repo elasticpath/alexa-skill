@@ -30,6 +30,8 @@ const speechAssets = {
     description: 'Vestri Motors sells wheels, chargers, maintenance parts, and services for your electric car. The store also sells Vestri merchandise such as shirts, hats, and accessories.',
     sendoff: 'Thank you for shopping with vestri motors!  Talk to you again soon.',
     foundItem: 'I found an item called <<itemName>>, would you like to add it to your cart? ',
+    linkAccount: 'You must have a Vestri account to shop.  Please use the Alexa app to link your Amazon account with your Vestri account. ',
+    reauthenticate: 'Your login to Vestri has expired, please use the Alexa app to link your Amazon account with your Vestri account. ',
     itemNotFound: [
         'I couldn\'t find that item in our store. ',
         'I can\'t find that item. ',
@@ -242,6 +244,10 @@ assets.prototype.sendoff = function() {
     return speechAssets.sendoff;
 };
 
+assets.prototype.linkAccount = function() {
+    return cleanOutput(pickVariation(speechAssets.linkAccount));
+}
+
 /*
  * PROMPTS
  */
@@ -258,7 +264,7 @@ assets.prototype.whatNext = function() {
 }
 
 /*
- * GENERIC ERROR MESSAGES
+ * ERROR MESSAGES
  */
 assets.prototype.somethingWentWrong = function() {
     return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.somethingWentWrong), this.howElseCanIHelp());
@@ -267,6 +273,10 @@ assets.prototype.somethingWentWrong = function() {
 assets.prototype.unhandled = function() {
     return cleanOutput(this.appologeticFiller(), pickVariation(speechAssets.unhandled), this.howElseCanIHelp());
 };
+
+assets.prototype.reauthenticate = function() {
+    return cleanOutput(pickVariation(speechAssets.reauthenticate));
+}
 
 /*
  * HELP

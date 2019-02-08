@@ -31,7 +31,7 @@ const CheckOutHandler = {
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.getTotals())
+            .getTotals()
             .then((data) => {
                 let speech, reprompt;
                 if (data._defaultcart[0]['total-quantity'] > 0) {

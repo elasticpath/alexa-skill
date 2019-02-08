@@ -35,7 +35,7 @@ const RemoveFromWishlistHandler = {
             const item = (attributes.orderedWishlist && attributes.orderedWishlist[itemIndex]) ? attributes.orderedWishlist[itemIndex] : null;
             if (item) {
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.cortexDeleteFromWishlist(item.code))
+                .cortexDeleteFromWishlist(item.code)
                 .then(() => {
                     attributes.orderedWishlist.splice(itemIndex, 1);
                     resolve(responseBuilder

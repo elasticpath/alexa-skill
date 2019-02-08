@@ -39,7 +39,7 @@ const AddToCartHandler = {
             }
             if (productSku) {
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.cortexAddToCart(productSku, 1))
+                .cortexAddToCart(productSku, 1)
                 .then(() => {
                     resolve(responseBuilder
                         .speak(SpeechAssets.addedToCart())

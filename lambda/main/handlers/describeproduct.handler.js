@@ -33,7 +33,7 @@ const DescribeProductHandler = {
             const attributes = attributesManager.getSessionAttributes();
             if (attributes.requestedSku) {
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.getItemBySku(attributes.requestedSku))
+                .getItemBySku(attributes.requestedSku)
                 .then((item) => {
                     item.definition.details.forEach((detail) => {
                         if (detail.name === PROD_DESCRIPTION) {

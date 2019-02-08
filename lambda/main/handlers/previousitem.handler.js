@@ -37,7 +37,7 @@ const PreviousItemHandler = {
                 attributes.requestedSku = attributes.searchResults[index];
                 attributesManager.setSessionAttributes(attributes);
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.getItemBySku(attributes.requestedSku))
+                .getItemBySku(attributes.requestedSku)
                 .then((item) => {
                     resolve(responseBuilder
                         .speak(SpeechAssets.previousItem(item.definition.displayName))

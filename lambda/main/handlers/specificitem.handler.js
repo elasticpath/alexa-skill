@@ -36,25 +36,21 @@ const SpecificItemHandler = {
                 attributes.requestedSku = attributes.searchResults[index];
                 attributesManager.setSessionAttributes(attributes);
                 Cortex.getCortexInstance()
-                .then((cortex) => {
-                    cortex.getItemBySku(attributes.requestedSku)
-                    .then((item) => {
-                        resolve(responseBuilder
-                            .speak(SpeechAssets.specificItem(item.definition.displayName))
-                            .reprompt(SpeechAssets.canIHelp())
-                            .getResponse());
-                    })
-                    .catch(error => reject(error));
+                .getItemBySku(attributes.requestedSku)
+                .then((item) => {
+                    resolve(responseBuilder
+                        .speak(SpeechAssets.specificItem(item.definition.displayName))
+                        .reprompt(SpeechAssets.canIHelp())
+                        .getResponse());
                 })
                 .catch(error => reject(error));
-            }
-            else {
+            } else {
                 resolve(responseBuilder
                     .speak(`That's all I have right now. ${SpeechAssets.whatNext()}`)
                     .reprompt(SpeechAssets.canIHelp())
                     .getResponse());
             }
-        })
+        });
     }
 };
 

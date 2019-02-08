@@ -33,7 +33,7 @@ const KeywordSearchHandler = {
             if (requestEnvelope.request.intent.slots && requestEnvelope.request.intent.slots.SearchKeyword) {
                 const keywords = requestEnvelope.request.intent.slots.SearchKeyword.value;
                 Cortex.getCortexInstance()
-                .then((cortex) => cortex.getItemsByKeyword(keywords))
+                .getItemsByKeyword(keywords)
                 .then((items) => {
                     let speech;
                     if (items.length > 0) {

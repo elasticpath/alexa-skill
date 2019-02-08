@@ -37,7 +37,7 @@ const ConfirmCheckoutHandler = {
     handle({responseBuilder}) {
         return new Promise((resolve, reject) => {
             Cortex.getCortexInstance()
-            .then((cortex) => cortex.cortexCheckout())
+            .cortexCheckout()
             .then(() => {
                 resolve(responseBuilder
                     .speak(SpeechAssets.purchaseSuccess())
