@@ -307,7 +307,7 @@ assets.prototype.searchResults = function(numItems, item) {
         const result = (numItems === 1) ? pickVariation(speechAssets.search.results.oneResult) : pickVariation(speechAssets.search.results.manyResults);
         const topItem = `${pickVariation(speechAssets.search.results.topItem)} ${pickVariation(speechAssets.search.nextOptions)} ${this.whatNext()}`;
         return cleanOutput(this.positiveFiller(), result, topItem)
-            .replace('<<itemName>>', item.definition.displayName)
+            .replace('<<itemName>>', item._definition[0]['display-name'])
             .replace('<<quantity>>', numItems);
     }
     return this.noProductToDescribe();
@@ -316,8 +316,8 @@ assets.prototype.searchResults = function(numItems, item) {
 assets.prototype.describeProduct = function(description, item) {
     const response = pickVariation(speechAssets.describeProduct)
         .replace('<<itemDescription>>', description)
-        .replace('<<itemName>>', item.definition.displayName)
-        .replace('<<itemPrice>>', item.price.purchasePrice[0].display);
+        .replace('<<itemName>>', item._definition[0]['display-name'])
+        .replace('<<itemPrice>>', item._price[0]['purchase-price'][0].display);
 
     return cleanOutput(this.positiveFiller(), response);
 };

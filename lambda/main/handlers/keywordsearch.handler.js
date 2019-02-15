@@ -34,16 +34,16 @@ const KeywordSearchHandler = {
                 const keywords = requestEnvelope.request.intent.slots.SearchKeyword.value;
                 Cortex.getCortexInstance()
                 .getItemsByKeyword(keywords)
-                .then((items) => {
+                .then((data) => {
                     let speech;
-                    if (items.length > 0) {
+                    if (data && data.length > 0) {
                         const attributes = attributesManager.getSessionAttributes();
                         const searchResults = [];
-                        items.forEach(item => searchResults.push(item.code));
-                        attributes.requestedSku = items[0].code;
+                        data.forEach(item => searchResults.push(item._code[0].code));
+                        attributes.requestedSku = data[0]._code[0].code;
                         attributes.searchResults = searchResults;
                         attributesManager.setSessionAttributes(attributes);
-                        speech = SpeechAssets.searchResults(items.length, items[0]);
+                        speech = SpeechAssets.searchResults(data.length, data[0]);
                     } else {
                         speech = SpeechAssets.itemNotFound();
                     }

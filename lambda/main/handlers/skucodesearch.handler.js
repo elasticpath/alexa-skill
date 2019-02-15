@@ -35,7 +35,7 @@ const SkuCodeSearchHandler = {
             .getItemBySku(sku)
             .then((item) => {
                 resolve(responseBuilder
-                    .speak(SpeechAssets.itemFound(item.displayName))
+                    .speak(SpeechAssets.itemFound(item._definition[0]['display-name']))
                     .reprompt(SpeechAssets.addToCartQuery())
                     .getResponse());
             })

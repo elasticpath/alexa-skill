@@ -40,7 +40,7 @@ const PreviousItemHandler = {
                 .getItemBySku(attributes.requestedSku)
                 .then((item) => {
                     resolve(responseBuilder
-                        .speak(SpeechAssets.previousItem(item.definition.displayName))
+                        .speak(SpeechAssets.previousItem(item._definition[0]['display-name']))
                         .reprompt(SpeechAssets.canIHelp())
                         .getResponse());
                 })

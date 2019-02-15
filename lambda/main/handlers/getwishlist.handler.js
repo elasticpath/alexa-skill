@@ -37,9 +37,9 @@ const GetWishlistHandler = {
                 const orderedWishlist = [];
                 for (const item of items) {
                         orderedWishlist.push({
-                            name: item.definition.displayName,
-                            code: item.code,
-                            movetocartform: item.movetocartform,
+                            name: item._element[0]._item[0]._definition[0]['display-name'],
+                            code: item._element[0]._item[0]._code[0].code,
+                            movetocartform: item._element[0]._movetocartform[0]._movetocartaction[0].self.href,
                         });
                 }
                 attributes.orderedWishlist = orderedWishlist;

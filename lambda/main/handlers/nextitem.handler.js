@@ -41,7 +41,7 @@ const NextItemHandler = {
                 .getItemBySku(currentItemSku)
                 .then((item) => {
                     resolve(responseBuilder
-                        .speak(SpeechAssets.nextItem(item.definition.displayName))
+                        .speak(SpeechAssets.nextItem(item._definition[0]['display-name']))
                         .reprompt(SpeechAssets.canIHelp())
                         .getResponse());
                 })
