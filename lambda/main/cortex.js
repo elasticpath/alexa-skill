@@ -20,7 +20,6 @@
  */
 
 const request = require("request-promise-native");
-const Product = require("./parsing/product");
 
 const CORTEX_URL = process.env.CORTEX_URL;
 
@@ -180,8 +179,7 @@ Cortex.prototype.getItemBySku = function (sku) {
         'definition:components:element',
         'price',
     ];
-    return this.cortexGetItem(sku, zoom.join())
-        .then(itemData => Product.fromCortexJson(itemData));
+    return this.cortexGetItem(sku, zoom.join());
 }
 
 /**
@@ -204,11 +202,10 @@ Cortex.prototype.getItemsByKeyword = function (keyword) {
         })
         .then((data) => {
             const result = [];
-            if (data._element && data._element.length > 0) {
-                data._element.forEach((itemJson) => {
-                    const parsedItem = Product.fromCortexJson(itemJson);
-                    if (parsedItem.isAvailable()) {
-                        result.push(parsedItem);
+            if (data._element) {
+                data._element.forEach((item) => {
+                    if (item._availability[0].state === 'AVAILABLE') {
+                        result.push(item);
                     }
                 });
             }
@@ -286,15 +283,7 @@ Cortex.prototype.getWishlistItems = function () {
         ];
         this.cortexGet(`${this.cortexBaseUrl}/?zoom=${zoom.join()}`)
         .then((data) => {
-            const wishlistItems = []
-            if (data._defaultwishlist) {
-                const lineItems = data._defaultwishlist[0]._lineitems[0]._element;
-                lineItems.forEach((lineitem) => {
-                    const item = Product.fromCortexJson(lineitem._item[0]);
-                    item.movetocartform = lineitem._movetocartform[0]._movetocartaction[0].self.href;
-                    wishlistItems.push(item);
-                });
-            }
+            const wishlistItems = (data._defaultwishlist) ? data._defaultwishlist[0]._lineitems : [];
             resolve(wishlistItems);
         })
         .catch((err) => reject(err));
@@ -302,29 +291,21 @@ Cortex.prototype.getWishlistItems = function () {
 };
 
 Cortex.prototype.getCartItems = function () {
-    return new Promise((resolve, reject) => {
-        const zoom = [
-            'defaultcart:lineitems:element:item:code',
-            'defaultcart:lineitems:element:item:definition',
-            'defaultcart:lineitems:element:movetowishlistform:movetowishlistaction',
-            'defaultcart:lineitems:element:price',
-        ];
-        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
-        .then((data) => resolve(data))
-        .catch((error) => reject(error));
-    });
+    const zoom = [
+        'defaultcart:lineitems:element:item:code',
+        'defaultcart:lineitems:element:item:definition',
+        'defaultcart:lineitems:element:movetowishlistform:movetowishlistaction',
+        'defaultcart:lineitems:element:price',
+    ];
+    return this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
 }
 
 Cortex.prototype.getTotals = function() {
-    return new Promise((resolve, reject) => {
-        const zoom = [
-            'defaultcart',
-            'defaultcart:total'
-        ];
-        this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
-        .then((data) => resolve(data))
-        .catch((error) => reject(error));
-    });
+    const zoom = [
+        'defaultcart',
+        'defaultcart:total'
+    ];
+    return this.cortexGet(`${this.cortexBaseUrl}?zoom=${zoom.join()}`)
 }
 
 Cortex.prototype.cortexCheckout = function () {

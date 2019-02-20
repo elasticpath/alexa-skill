@@ -39,7 +39,7 @@ const SpecificItemHandler = {
                 .getItemBySku(attributes.requestedSku)
                 .then((item) => {
                     resolve(responseBuilder
-                        .speak(SpeechAssets.specificItem(item.definition.displayName))
+                        .speak(SpeechAssets.specificItem(item._definition[0]['display-name']))
                         .reprompt(SpeechAssets.canIHelp())
                         .getResponse());
                 })

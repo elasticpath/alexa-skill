@@ -35,7 +35,7 @@ const DescribeProductHandler = {
                 Cortex.getCortexInstance()
                 .getItemBySku(attributes.requestedSku)
                 .then((item) => {
-                    item.definition.details.forEach((detail) => {
+                    item._definition[0].details.forEach((detail) => {
                         if (detail.name === PROD_DESCRIPTION) {
                             const description = detail['display-value'].slice(0, detail['display-value'].indexOf('.'))
                             resolve(responseBuilder
