@@ -37,6 +37,7 @@ Ensure that the following software are installed:
 *  [Git](https://git-scm.com/downloads)
 *  [Node.js](https://nodejs.org/en/download/)
 * A publicly available Cortex API endpoint.
+* A publicly available [Account Linking](https://github.com/elasticpath/)
 * A valid [Amazon Web Services (AWS) Account](https://console.aws.amazon.com)
 * A valid [Amazon Developer Account](https://developer.amazon.com)
 
@@ -56,7 +57,7 @@ Ensure that the following software are installed:
 
 7. Select the Endpoint link from the menu on the left.
 
-8. Enter the ARN for the Lambda you create in the [Setting up the Lambda](#setting-up-the-lambda) section.
+8. Enter the ARN for the Lambda you create in the [Setting up the Lambda](#setting-up-the-lambda) section, or an HTTPS endpoint where your skill is being hosted.
 
 9. Save Endpoints.
 
@@ -91,6 +92,37 @@ Ensure that the following software are installed:
 9. Save the function.
 
 ### Setting up a Development Environment
+
+Local development is enabled using the [alexa-skill-local](https://www.npmjs.com/package/alexa-skill-local) module.
+
+1. You must complete the [Deploying the Skill to AVS](#deploying-the-the-skill-to-avs) section before developing locally.
+
+2. Clone or pull the `alexa-skill` repository.
+
+3. Run the `cd lambda/main` command.
+
+4. Modify the `asl-config.json` file, replacing the placeholder `skillId` value with your Alexa Skill ID.
+
+5. Run the `npm install` command to install depenedencies.
+
+6. Create an environment variable called `CORTEX_URL` that points to a publicly available Cortex endpoint, or a valid Elastic Path development environment. For more information, see
+[The Starting Construction Guide](https://developers.elasticpath.com/commerce/construction-home).
+
+7. Run the `npm start` command to start the `alexa-skill-local` server.
+
+8. In a browser, navigate to `localhost:3001` to link your local development environment to your Amazon Skill.
+
+9. Take note the `ngrok` URL from the command line output.
+
+10. In a browser, navigate to the Endpoint link under your Alexa skill.
+
+11. Select HTTPS enpoint.
+
+12. Enter the URL from Step 8.
+
+13. Save Endpoints.
+
+14. New sessions will be directed to your local skill. Changes will be hotswapped, and local Node debuggers can be attached.
 
 ## Project Structure
 
