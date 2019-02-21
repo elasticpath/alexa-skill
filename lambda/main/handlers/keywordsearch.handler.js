@@ -39,8 +39,11 @@ const KeywordSearchHandler = {
                     if (data && data.length > 0) {
                         const attributes = attributesManager.getSessionAttributes();
                         const searchResults = [];
-                        data.forEach(item => searchResults.push(item._code[0].code));
-                        attributes.requestedSku = data[0]._code[0].code;
+                        data.forEach(item => {
+                            const code = (item._items) ? item._items[0]._element[0]._code[0].code : item._code[0].code;
+                            searchResults.push(code)
+                        });
+                        attributes.requestedSku = searchResults[0];
                         attributes.searchResults = searchResults;
                         attributesManager.setSessionAttributes(attributes);
                         speech = SpeechAssets.searchResults(data.length, data[0]);
