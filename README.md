@@ -36,7 +36,7 @@ Ensure that the following software are installed:
 
 *  [Git](https://git-scm.com/downloads)
 *  [Node.js](https://nodejs.org/en/download/)
-* A publically available Cortex API endpoint.
+* A publicly available Cortex API endpoint.
 * A valid [Amazon Web Services (AWS) Account](https://console.aws.amazon.com)
 * A valid [Amazon Developer Account](https://developer.amazon.com)
 
@@ -86,7 +86,7 @@ Ensure that the following software are installed:
 
 7. Upload the zip file you created to your Lambda
 
-8. Create an environment variable called CORTEX_URL that points to a publically available Cortex endpoint.
+8. Create an environment variable called `CORTEX_URL` that points to a publicly available Cortex endpoint.
 
 9. Save the function.
 
@@ -121,7 +121,7 @@ For a complete list of sample phrases, check the [Interaction Model](./models/en
 | Remove from Wishlist      | "Remove item number one from my wishlist" | `RemoveFromWishlistIntent`                            |
 | Checkout                  | "I'd like to check out"                   | `CheckOutIntent`                                      |
 
-In addition to these, the Vestri Reference Experience incorporates several out of the box Alexa intents.
+In addition to these, the Alexa Reference Skill incorporates several out of the box Alexa intents.
 
 | Action                    | Sample Utterance                          | Intent Name                                           |
 | ------------------------- | ----------------------------------------- | ----------------------------------------------------- |
