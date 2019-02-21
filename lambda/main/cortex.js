@@ -183,13 +183,13 @@ Cortex.prototype.getItemBySku = function (sku) {
 }
 
 /**
- * Will query keyword cortex resource
+ * Will query offersearch cortex resource
  * @param  {[String]} keyword        - The keyword to be searched
  * @return {[Promise]} - Returns a promise
  */
 Cortex.prototype.getItemsByKeyword = function (keyword) {
     return new Promise((resolve, reject) => {
-        this.cortexGet(`${this.cortexBaseUrl}?zoom=searches:keywordsearchform:itemkeywordsearchaction`)
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=searches:offersearchform:offersearchaction`)
         .then(data => {
             const zoom = [
                 'element:code',
@@ -197,7 +197,7 @@ Cortex.prototype.getItemsByKeyword = function (keyword) {
                 'element:price',
                 'element:availability'
             ];
-            const url = data._searches[0]._keywordsearchform[0]._itemkeywordsearchaction[0].self.href;
+            const url = data._searches[0]._offersearchform[0]._offersearchaction[0].self.href;
             return this.cortexPost(`${url}?followlocation&zoom=${zoom.join()}`, { keywords: keyword });
         })
         .then((data) => {
