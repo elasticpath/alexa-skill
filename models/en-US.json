@@ -252,20 +252,6 @@
             "remove item {ItemNumber} from my wish list",
             "delete item {ItemNumber} from my wish list"
           ]
-        },
-        {
-          "name": "SkuCodeSearchIntent",
-          "slots": [
-            {
-              "name": "SkuCode",
-              "type": "AMAZON.NUMBER"
-            }
-          ],
-          "samples": [
-            "Get the item with sku {SkuCode}",
-            "Search for sku {SkuCode}",
-            "Find item with sku {SkuCode}"
-          ]
         }
       ],
       "types": [

@@ -44,7 +44,6 @@ module.exports.ElasticPathIntents = {
     PREVIOUS_ITEM: 'PreviousItemIntent',
     REMOVE_FROM_CART: 'RemoveFromCartIntent',
     REMOVE_FROM_WISHLIST: 'RemoveFromWishlistIntent',
-    SKU_SEARCH: 'SkuCodeSearchIntent',
     SPECIFIC_ITEM: 'SpecificItemIntent',
 };
 

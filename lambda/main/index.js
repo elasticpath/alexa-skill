@@ -44,7 +44,6 @@ const RemoveFromCartHandler = require('./handlers/removefromcart.handler');
 const RemoveFromWishlistHandler = require('./handlers/removefromwishlist.handler');
 const SessionEndedHandler = require('./handlers/sessionended.handler');
 const SpecificItemHandler = require('./handlers/specificitem.handler');
-const SkuCodeSearchHandler = require('./handlers/skucodesearch.handler');
 const StopSessionHandler = require('./handlers/stopsession.handler');
 
 // Error Handlers
@@ -77,7 +76,6 @@ exports.handler = Alexa.SkillBuilders.custom()
         RemoveFromWishlistHandler,
         SessionEndedHandler,
         SpecificItemHandler,
-        SkuCodeSearchHandler,
         StopSessionHandler
     )
     .addRequestInterceptors(AuthInterceptor)
