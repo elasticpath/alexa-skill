@@ -37,7 +37,7 @@ Ensure that the following software are installed:
 *  [Git](https://git-scm.com/downloads)
 *  [Node.js](https://nodejs.org/en/download/)
 * A publicly available Cortex API endpoint.
-* A publicly available [Account Linking](https://github.com/elasticpath/)
+* A publicly available [Account Linking Server](https://github.com/elasticpath/)
 * A valid [Amazon Web Services (AWS) Account](https://console.aws.amazon.com)
 * A valid [Amazon Developer Account](https://developer.amazon.com)
 
