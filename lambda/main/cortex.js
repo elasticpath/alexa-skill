@@ -183,7 +183,7 @@ Cortex.prototype.getItemBySku = function (sku) {
 }
 
 /**
- * Will query offersearch cortex resource, or kwywordsearch if offersearch is unavailable.
+ * Will query offersearch cortex resource, or keywordsearch if offersearch is unavailable.
  * @param  {[String]} keyword        - The keyword to be searched
  * @return {[Promise]} - Returns a promise
  */
