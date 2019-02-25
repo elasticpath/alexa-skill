@@ -12,6 +12,7 @@
       * [Setting up a Development Environment](#setting-up-a-development-environment)
   * [Project Structure](#project-structure)
   * [Intents Reference](#intents-reference)
+  * [Account Linking](#account-linking)
   * [Terms And Conditions](#terms-and-conditions)
 
 ## Reference Alexa Skill
@@ -78,10 +79,10 @@ Ensure that the following software are installed:
 4. Zip up the contents of the current directory, including the `node_modules` folder.
 
 5. In AWS, create a Lambda function with an Alexa Skills Kit trigger.  Currently, only the following AWS regions support Alexa Skills Kit triggers:
-  * Asia Pacific (Tokyo)
-  * EU (Ireland)
-  * US East (N. Virginia)
-  * US West (Oregon)
+    * Asia Pacific (Tokyo)
+    * EU (Ireland)
+    * US East (N. Virginia)
+    * US West (Oregon)
 
 6. Enter the Skill ID from the Alexa Skill in the Configure Triggers input
 
@@ -153,7 +154,7 @@ For a complete list of sample phrases, check the [Interaction Model](./models/en
 | Remove from Wishlist      | "Remove item number one from my wishlist" | `RemoveFromWishlistIntent`                            |
 | Checkout                  | "I'd like to check out"                   | `CheckOutIntent`                                      |
 
-In addition to these, the Alexa Reference Skill incorporates several out of the box Alexa intents.
+In addition to these, the Reference Alexa Skill incorporates several out of the box Alexa intents.
 
 | Action                    | Sample Utterance                          | Intent Name                                           |
 | ------------------------- | ----------------------------------------- | ----------------------------------------------------- |
@@ -162,6 +163,12 @@ In addition to these, the Alexa Reference Skill incorporates several out of the 
 | Help                      | "Help / What are my options?"             | `AMAZON.HelpIntent`                                   |
 | Exit                      | "Alexa, stop / exit"                      | `AMAZON.StopIntent`                                   |
 | Cancel                    | "Cancel"                                 | `AMAZON.CancelIntent`                                 |
+
+## Account Linking
+
+The Reference Alexa Skill does not support guest shoppers.  Users who have not authenticated will be asked to undergo the account linking process through the Alexa App before continuing.  Elastic Path provides a [Reference Account Linking Server](https://github.com/elasticpath/account-linking).
+
+For more information on account linking with Alexa, please visit the [Amazon Developer Documentation](https://developer.amazon.com/docs/account-linking/understand-account-linking.html)
 
 ## Terms And Conditions
 
