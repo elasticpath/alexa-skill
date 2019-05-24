@@ -10,6 +10,7 @@
       * [Deploying the Skill to AVS](#deploying-the-the-skill-to-avs)
       * [Setting up the Lambda](#setting-up-the-lambda)
       * [Setting up a Development Environment](#setting-up-a-development-environment)
+      * [Setting up Account Linking](#setting-up-account-linking)
   * [Project Structure](#project-structure)
   * [Intents Reference](#intents-reference)
   * [Terms And Conditions](#terms-and-conditions)
@@ -37,7 +38,7 @@ Ensure that the following software are installed:
 *  [Git](https://git-scm.com/downloads)
 *  [Node.js](https://nodejs.org/en/download/)
 * A publicly available Cortex API endpoint.
-* A publicly available [Account Linking Server](https://github.com/elasticpath/)
+* A publicly available [Account Linking Server](https://github.com/elasticpath/account-linking)
 * A valid [Amazon Web Services (AWS) Account](https://console.aws.amazon.com)
 * A valid [Amazon Developer Account](https://developer.amazon.com)
 
@@ -123,6 +124,25 @@ Local development is enabled using the [alexa-skill-local](https://www.npmjs.com
 13. Save Endpoints.
 
 14. New sessions will be directed to your local skill. Changes will be hotswapped, and local Node debuggers can be attached.
+
+### Setting up Account Linking
+
+1. Set up the Reference Account Linking server found [here](https://github.com/elasticpath/account-linking)
+2. Log into to your Alexa Developer account at `developer.amazon.com` and navigate `Alexa`>`Your Alexa Consoles`> `Skills`>`<Your Skill Name>`
+3. On the left sidebar, scroll down and select `Account Linking`
+4. Set "Do you allow users to create an account or link to an existing account with you?" to On
+5. Under Security Provider Information select Implicit Grant.
+6. Fill in the fields under Security Provider Information. Refer to the chart below
+
+|Field name | field|
+|----------|-------|
+|Authorization URI| Set to the endpoint of the Account Linking server you set up in step one (Note: An `https://` endpoint is required)|
+|Client ID | An identifier for your skill |
+|Scope | An optional list of scopes that indicating the access the Alexa user needs. |
+|Domain List | Set to the Domain of your Account Linking endpoint |
+
+7. Press the save button
+8. To test, go to the **Test** tab and invoke the skill. Alexa should respond with asking the user to link account. You can find more information on account linking with Alexa Skills [here](https://developer.amazon.com/docs/account-linking/account-linking-for-custom-skills.html#how-users-connect).
 
 ## Project Structure
 
