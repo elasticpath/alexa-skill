@@ -29,6 +29,8 @@ This document provides guidelines to setup and configure the Reference Alexa Ski
 
 The Reference Alexa Skill is a flexible IoT skill, which communicates with Elastic Path’s RESTful e-commerce API, Cortex API. Through the Cortex API, the skill uses the e-commerce capabilities provided by Elastic Path Commerce and interacts with data in a RESTful manner.
 
+![Architecture Diagram](images/architecture.png)
+
 ## Setting up the Skill
 
 ### Prerequisites
