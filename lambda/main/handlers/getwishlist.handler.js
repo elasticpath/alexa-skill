@@ -34,20 +34,28 @@ const GetWishlistHandler = {
             .getWishlistItems()
             .then((items) => {
                 const attributes = attributesManager.getSessionAttributes();
-                const orderedWishlist = [];
-                for (const item of items) {
+                const lineitems = items[0] ? items[0]._element : [];
+                if (lineitems.length > 0) {
+                    const orderedWishlist = [];
+                    lineitems.forEach((item) => {
                         orderedWishlist.push({
-                            name: item._element[0]._item[0]._definition[0]['display-name'],
-                            code: item._element[0]._item[0]._code[0].code,
-                            movetocartform: item._element[0]._movetocartform[0]._movetocartaction[0].self.href,
+                            name: item._item[0]._definition[0]['display-name'],
+                            code: item._item[0]._code[0].code,
+                            movetocartform: item._movetocartform[0]._movetocartaction[0].self.href,
                         });
+                    });
+                    attributes.orderedWishlist = orderedWishlist;
+                    attributesManager.setSessionAttributes(attributes);
+                    resolve(responseBuilder
+                        .speak(SpeechAssets.describeWishlist(attributes.orderedWishlist))
+                        .reprompt(SpeechAssets.howElseCanIHelp())
+                        .getResponse());
+                } else {
+                    resolve(responseBuilder
+                        .speak(SpeechAssets.emptyWishlist())
+                        .reprompt(SpeechAssets.howElseCanIHelp())
+                        .getResponse());
                 }
-                attributes.orderedWishlist = orderedWishlist;
-                attributesManager.setSessionAttributes(attributes);
-                resolve(responseBuilder
-                    .speak(SpeechAssets.describeWishlist(attributes.orderedWishlist))
-                    .reprompt(SpeechAssets.howElseCanIHelp())
-                    .getResponse());
             })
             .catch((err) => reject(err));
         });

@@ -137,6 +137,9 @@ const speechAssets = {
     noItemsInCart: [
         'Your cart is empty, add some items first. '
     ],
+    noItemsInWishlist: [
+        'Your wishlist is empty, add some items first. '
+    ],
     purchaseSuccess: [
         'Great!  Your purchase was successful. ',
         'Ok, your order has been placed. ',
@@ -233,7 +236,7 @@ const cleanOutput = function(...output) {
 }
 
 assets.prototype.greeting = function() {
-    return `${speechAssets.greeting} ${this.howElseCanIHelp()}`;
+    return `${speechAssets.greeting} ${this.canIHelp()}`;
 };
 
 assets.prototype.description = function() {
@@ -423,6 +426,10 @@ assets.prototype.noItemsToCheckOut = function() {
 
 assets.prototype.emptyCart = function() {
     return cleanOutput(pickVariation(speechAssets.noItemsInCart), this.howElseCanIHelp());
+};
+
+assets.prototype.emptyWishlist = function() {
+    return cleanOutput(pickVariation(speechAssets.noItemsInWishlist), this.howElseCanIHelp());
 };
 
 assets.prototype.fullCheckoutMessage = function(quantity, total) {
