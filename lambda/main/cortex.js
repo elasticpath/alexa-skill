@@ -296,6 +296,8 @@ Cortex.prototype.getWishlistItems = function () {
 
 Cortex.prototype.getCartItems = function () {
     const zoom = [
+        'defaultcart',
+        'defaultcart:lineitems:element',
         'defaultcart:lineitems:element:item:code',
         'defaultcart:lineitems:element:item:definition',
         'defaultcart:lineitems:element:movetowishlistform:movetowishlistaction',

@@ -34,21 +34,21 @@ const GetCartHandler = {
             .getCartItems()
             .then((data) => {
                 const attributes = attributesManager.getSessionAttributes();
-                const lineitems = (data._defaultcart) ? data._defaultcart[0]._lineitems[0]._element : [];
-                if (lineitems.length > 0) {
+                const lineitems = (data._defaultcart && data._defaultcart[0]._lineitems) ? data._defaultcart[0]._lineitems[0]._element : [];                if (lineitems.length > 0) {
                     const items = [];
                     lineitems.forEach((item) => {
                         items.push({
                             name: item._item[0]._definition[0]['display-name'],
                             code: item._item[0]._code[0].code,
                             price: item._price[0]['purchase-price'][0].amount,
+                            quantity: item.quantity,
                             movetowishlist: item._movetowishlistform[0]._movetowishlistaction[0].self.href
                         });
                     });
                     attributes.orderedCart = items;
                     attributesManager.setSessionAttributes(attributes);
                     resolve(responseBuilder
-                        .speak(SpeechAssets.cartDescription(items))
+                        .speak(SpeechAssets.cartDescription(data._defaultcart[0]['total-quantity'], items))
                         .reprompt(SpeechAssets.readyToCheckOut())
                         .getResponse());
                 } else {

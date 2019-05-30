@@ -166,6 +166,7 @@ For a complete list of sample phrases, check the [Interaction Model](./models/en
 | Previous                  | "Previous item"                           | `PreviousItemIntent`                                  |
 | Describe Current Product  | "Tell me more about that"                 | `DescribeProductIntent` / `DescribeListedProductIntent` |
 | Add to Cart               | "Add that to my cart"                     | `AddToCartIntent`                                     |
+| Add to Cart (multiple)    | "Add three to my cart"                    | `AddToCartIntent`                                     |
 | Add to Wishlist           | "Add that to my wishlist"                 | `AddToWishlistIntent`                                 |
 | Explore Cart              | "What's in my cart?"                      | `GetCartIntent`                                       |
 | Explore Wishlist          | "What's in my wishlist?"                  | `GetWishlistIntent`                                   |

@@ -337,10 +337,10 @@ assets.prototype.itemNotFound = function() {
 /*
  * CART
  */
-assets.prototype.cartDescription = function(names) {
+assets.prototype.cartDescription = function(totalQty, names) {
     let speechResponse = 'You have '
-        + ((names.length === 0) ? 'no' : names.length)
-        + ((names.length === 1) ? ' item ' : ' items ') + 'in your cart.  ';
+        + ((totalQty === 0) ? 'no' : totalQty)
+        + ((totalQty === 1) ? ' item ' : ' items ') + 'in your cart.  ';
     if (names.length > 0) {
         speechResponse += this.itemList(names);
         speechResponse += this.readyToCheckOut();
@@ -362,7 +362,7 @@ assets.prototype.itemNotAvailable = function() {
 
 assets.prototype.itemList = function(items) {
     const itemList = [];
-    items.forEach((item, index) => itemList.push(`Item ${index + 1}: ${item.name.replace('&', 'and')}`));
+    items.forEach((item, index) => itemList.push(`Item ${index + 1}: ${item.name.replace('&', 'and')}${item.quantity ? `, quantity: ${item.quantity}` : ''}`));
     return `${itemList.join(';')}. `;
 };
 

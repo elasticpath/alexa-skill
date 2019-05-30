@@ -31,6 +31,10 @@ const AddToCartHandler = {
     handle({responseBuilder, attributesManager, requestEnvelope}) {
         return new Promise((resolve, reject) => {
             const attributes = attributesManager.getSessionAttributes();
+            const quantity = requestEnvelope.request.intent.slots
+                && requestEnvelope.request.intent.slots.ItemQuantity
+                && /^\d+$/.test(Number(requestEnvelope.request.intent.slots.ItemQuantity.value)) ?
+                Number(requestEnvelope.request.intent.slots.ItemQuantity.value) : 1;
             let productSku;
             if (attributes.requestedSku) {
                 productSku = attributes.requestedSku;
@@ -39,7 +43,7 @@ const AddToCartHandler = {
             }
             if (productSku) {
                 Cortex.getCortexInstance()
-                .cortexAddToCart(productSku, 1)
+                .cortexAddToCart(productSku, quantity)
                 .then(() => {
                     resolve(responseBuilder
                         .speak(SpeechAssets.addedToCart())
