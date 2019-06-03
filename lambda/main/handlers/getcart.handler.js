@@ -46,6 +46,7 @@ const GetCartHandler = {
                         });
                     });
                     attributes.orderedCart = items;
+                    attributes.checkout = true;
                     attributesManager.setSessionAttributes(attributes);
                     resolve(responseBuilder
                         .speak(SpeechAssets.cartDescription(items))

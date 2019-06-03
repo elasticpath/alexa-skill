@@ -22,10 +22,16 @@
 const Cortex = require('../cortex');
 const SpeechAssets = require('../speech/assets');
 const { isIntentRequestOfType } = require('../utils');
-const { ElasticPathIntents } = require('../constants');
+const { ElasticPathIntents, AmazonIntent } = require('../constants');
 
 const CheckOutHandler = {
-    canHandle({requestEnvelope}) {
+    canHandle({requestEnvelope, attributesManager}) {
+        const attributes = attributesManager.getSessionAttributes();
+        if (attributes.checkout) {
+            delete attributes.checkout;
+            attributesManager.setSessionAttributes(attributes);
+            return isIntentRequestOfType(requestEnvelope, AmazonIntent.YES);
+        }
         return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.CHECKOUT);
     },
     handle({responseBuilder, attributesManager}) {
