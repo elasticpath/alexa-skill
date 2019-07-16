@@ -5,13 +5,21 @@
       "intents": [
         {
           "name": "AddToCartIntent",
+          "slots": [
+            {
+              "name": "ItemQuantity",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
           "samples": [
-            "add the item to my cart",
-            "add it to my cart",
-            "put it in my cart",
-            "add it to cart",
-            "add that to my cart",
-            "add that item to my cart"
+            "add to cart",
+            "add {ItemQuantity} of the item to my cart",
+            "add {ItemQuantity} to my cart",
+            "put {ItemQuantity} in my cart",
+            "add {ItemQuantity} to cart",
+            "add {ItemQuantity} of those to my cart",
+            "add {ItemQuantity} of that to my cart",
+            "add {ItemQuantity} of that item to my cart"
           ]
         },
         {
@@ -167,7 +175,7 @@
           ],
           "samples": [
             "move item {ItemNumber} to my cart",
-            "put item {ItemNumber} in my car"
+            "put item {ItemNumber} in my cart"
           ]
         },
         {
