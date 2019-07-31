@@ -28,6 +28,8 @@ const AddToWishlistHandler = require('./handlers/addtowishlist.handler');
 const AuthHandler = require('./handlers/auth.handler');
 const CheckOutHandler = require('./handlers/checkout.handler');
 const ConfirmCheckoutHandler = require('./handlers/confirmcheckout.handler');
+const DescribeInventoryIntent = require('./handlers/describeinventory.handler');
+const DescribePriceHandler = require('./handlers/describeprice.handler');
 const DescribeProductHandler = require('./handlers/describeproduct.handler');
 const DescribeListedProductHandler = require('./handlers/descibelistedproduct.handler');
 const GetCartHandler = require('./handlers/getcart.handler');
@@ -60,6 +62,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         AddToWishlistHandler,
         ConfirmCheckoutHandler,
         CheckOutHandler,
+        DescribeInventoryIntent,
+        DescribePriceHandler,
         DescribeProductHandler,
         DescribeListedProductHandler,
         GetCartHandler,

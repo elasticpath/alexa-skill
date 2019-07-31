@@ -33,6 +33,8 @@ module.exports.ElasticPathIntents = {
     ADD_TO_CART: 'AddToCartIntent',
     ADD_TO_WISHLIST: 'AddToWishlistIntent',
     CHECKOUT: "CheckOutIntent",
+    DESCRIBE_INVENTORY: 'DescribeInventoryIntent',
+    DESCRIBE_PRICE: 'DescribePriceIntent',
     DESCRIBE_LISTED_PRODUCT: 'DescribeListedProductIntent',
     DESCRIBE_PRODUCT: 'DescribeProductIntent',
     GET_CART: 'GetCartIntent',
@@ -52,3 +54,4 @@ module.exports.Errors = {
 };
 
 module.exports.PROD_DESCRIPTION = 'summary';
+module.exports.PROD_DESCRIPTION_2 = 'DESCRIPTION';
