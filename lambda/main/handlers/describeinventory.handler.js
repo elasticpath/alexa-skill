@@ -26,7 +26,7 @@ const { ElasticPathIntents } = require('../constants');
 
 const DescribeInventoryHandler = {
     canHandle({requestEnvelope}) {
-        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRODUCT);
+        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_INVENTORY);
     },
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
@@ -38,7 +38,7 @@ const DescribeInventoryHandler = {
                     if (item._availability[0]) {
                         const availability = item._availability[0].state
                         resolve(responseBuilder
-                            .speak(SpeechAssets.describeProduct(availability, item))
+                            .speak(SpeechAssets.describeAvailability(availability, item))
                             .reprompt(SpeechAssets.howElseCanIHelp())
                             .getResponse());
                     }

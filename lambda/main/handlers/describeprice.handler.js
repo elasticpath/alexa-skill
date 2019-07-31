@@ -26,7 +26,7 @@ const { ElasticPathIntents } = require('../constants');
 
 const DescribePriceHandler = {
     canHandle({requestEnvelope}) {
-        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRODUCT);
+        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRICE);
     },
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
@@ -39,7 +39,7 @@ const DescribePriceHandler = {
                         if (price.display) {
                             const displayPrice = price.display
                             resolve(responseBuilder
-                                .speak(SpeechAssets.describeProduct(displayPrice, item))
+                                .speak(SpeechAssets.describePrice(displayPrice, item))
                                 .reprompt(SpeechAssets.howElseCanIHelp())
                                 .getResponse());
                         }
