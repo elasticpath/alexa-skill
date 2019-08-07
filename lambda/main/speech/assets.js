@@ -150,6 +150,12 @@ const speechAssets = {
         'Here\'s the description: <<itemDescription>>; The <<itemName>> retails for <<itemPrice>>. ',
         'Here\'s the write-up: <<itemDescription>>; The <<itemName>> retails for <<itemPrice>>. '
     ],
+    describePrice: [
+        '<<itemPrice>>. '
+    ],
+    describeAvailability: [
+        '<<itemName>> is: <<itemAvailability>>',
+    ],
     noProductToDescribe: 'I couldn\'t find a product to tell you about. ',
 
     somethingWentWrong: [
@@ -314,6 +320,21 @@ assets.prototype.searchResults = function(numItems, item) {
             .replace('<<quantity>>', numItems);
     }
     return this.noProductToDescribe();
+};
+
+assets.prototype.describePrice = function(description, item) {
+    const response = pickVariation(speechAssets.describePrice)
+        .replace('<<itemPrice>>', item._price[0]['purchase-price'][0].display);
+
+    return cleanOutput(this.positiveFiller(), response);
+};
+
+assets.prototype.describeAvailability = function(availability, item) {
+    const response = pickVariation(speechAssets.describeAvailability)
+        .replace('<<itemAvailability>>', availability)
+        .replace('<<itemName>>', item._definition[0]['display-name']);
+
+    return cleanOutput(this.positiveFiller(), response);
 };
 
 assets.prototype.describeProduct = function(description, item) {

@@ -22,11 +22,11 @@
 const Cortex = require('../cortex');
 const SpeechAssets = require('../speech/assets');
 const { isIntentRequestOfType } = require('../utils');
-const { ElasticPathIntents, PROD_DESCRIPTION, PROD_DESCRIPTION_2 } = require('../constants');
+const { ElasticPathIntents } = require('../constants');
 
-const DescribeProductHandler = {
+const DescribePriceHandler = {
     canHandle({requestEnvelope}) {
-        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRODUCT);
+        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRICE);
     },
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
@@ -35,12 +35,12 @@ const DescribeProductHandler = {
                 Cortex.getCortexInstance()
                 .getItemBySku(attributes.requestedSku)
                 .then((item) => {
-                    item._definition[0].details.forEach((detail) => {
-                        if (detail.name === PROD_DESCRIPTION || detail.name === PROD_DESCRIPTION_2) {
-                            const description = detail['display-value'].slice(0, detail['display-value'].indexOf('.'))
+                    item._price[0]['list-price'].forEach((price) => {
+                        if (price.display) {
+                            const displayPrice = price.display
                             resolve(responseBuilder
-                                .speak(SpeechAssets.describeProduct(description, item))
-                                .reprompt(SpeechAssets.addToCartQuery())
+                                .speak(SpeechAssets.describePrice(displayPrice, item))
+                                .reprompt(SpeechAssets.howElseCanIHelp())
                                 .getResponse());
                         }
                     });
@@ -56,4 +56,4 @@ const DescribeProductHandler = {
     }
 }
 
-module.exports = DescribeProductHandler;
+module.exports = DescribePriceHandler;

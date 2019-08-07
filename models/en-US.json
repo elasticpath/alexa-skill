@@ -114,6 +114,20 @@
           ]
         },
         {
+          "name": "DescribeInventoryIntent",
+          "samples": [
+            "is it in stock",
+            "is it available"
+          ]
+        },
+        {
+          "name": "DescribePriceIntent",
+          "samples": [
+            "what's it cost",
+            "what's the price"
+          ]
+        },
+        {
           "name": "DescribeProductIntent",
           "samples": [
             "tell me more about the item",

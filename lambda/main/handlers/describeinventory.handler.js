@@ -22,11 +22,11 @@
 const Cortex = require('../cortex');
 const SpeechAssets = require('../speech/assets');
 const { isIntentRequestOfType } = require('../utils');
-const { ElasticPathIntents, PROD_DESCRIPTION, PROD_DESCRIPTION_2 } = require('../constants');
+const { ElasticPathIntents } = require('../constants');
 
-const DescribeProductHandler = {
+const DescribeInventoryHandler = {
     canHandle({requestEnvelope}) {
-        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_PRODUCT);
+        return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.DESCRIBE_INVENTORY);
     },
     handle({responseBuilder, attributesManager}) {
         return new Promise((resolve, reject) => {
@@ -35,15 +35,13 @@ const DescribeProductHandler = {
                 Cortex.getCortexInstance()
                 .getItemBySku(attributes.requestedSku)
                 .then((item) => {
-                    item._definition[0].details.forEach((detail) => {
-                        if (detail.name === PROD_DESCRIPTION || detail.name === PROD_DESCRIPTION_2) {
-                            const description = detail['display-value'].slice(0, detail['display-value'].indexOf('.'))
-                            resolve(responseBuilder
-                                .speak(SpeechAssets.describeProduct(description, item))
-                                .reprompt(SpeechAssets.addToCartQuery())
-                                .getResponse());
-                        }
-                    });
+                    if (item._availability[0]) {
+                        const availability = item._availability[0].state
+                        resolve(responseBuilder
+                            .speak(SpeechAssets.describeAvailability(availability, item))
+                            .reprompt(SpeechAssets.howElseCanIHelp())
+                            .getResponse());
+                    }
                 })
                 .catch(error => reject(error))
             } else {
@@ -56,4 +54,4 @@ const DescribeProductHandler = {
     }
 }
 
-module.exports = DescribeProductHandler;
+module.exports = DescribeInventoryHandler;
