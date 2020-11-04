@@ -140,6 +140,9 @@ const speechAssets = {
     noItemsInWishlist: [
         'Your wishlist is empty, add some items first. '
     ],
+    noPurchases: [
+        'You have no previous purchases, complete an order first. '
+    ],
     purchaseSuccess: [
         'Great!  Your purchase was successful. ',
         'Ok, your order has been placed. ',
@@ -149,6 +152,12 @@ const speechAssets = {
         'Here\'s what the description says: <<itemDescription>>; The <<itemName>> retails for <<itemPrice>>. ',
         'Here\'s the description: <<itemDescription>>; The <<itemName>> retails for <<itemPrice>>. ',
         'Here\'s the write-up: <<itemDescription>>; The <<itemName>> retails for <<itemPrice>>. '
+    ],
+    describePurchaseStatus: [
+        'Your previous order, order number <<orderNumber>>, is <<status>>. ',
+        'Your previous purchase, order number <<orderNumber>>, is <<status>>. ',
+        'Your last order, order number <<orderNumber>>, is <<status>>. ',
+        'Your last purchase, order number <<orderNumber>>, is <<status>>. ',
     ],
     describePrice: [
         '<<itemPrice>>. '
@@ -238,7 +247,7 @@ const pickVariation = function(arrayOfResponses) {
 
 const cleanOutput = function(...output) {
     // eslint-disable-next-line no-useless-escape
-    return ` ${output.join(' ').replace(/(?!\.[\d\.])\./g, '. ').replace(/&/g, 'and').replace(/\s\s+/g, ' ')} `;
+    return ` ${output.join(' ').replace(/(?!\.[\d\.])\./g, '. ').replace(/&/g, 'and').replace(/\s\s+/g, ' ').replace(/_/g, ' ')} `;
 }
 
 assets.prototype.greeting = function() {
@@ -342,6 +351,14 @@ assets.prototype.describeProduct = function(description, item) {
         .replace('<<itemDescription>>', description)
         .replace('<<itemName>>', item._definition[0]['display-name'])
         .replace('<<itemPrice>>', item._price[0]['purchase-price'][0].display);
+
+    return cleanOutput(this.positiveFiller(), response);
+};
+
+assets.prototype.describePurchaseStatus = function(orderNumber, status) {
+    const response = pickVariation(speechAssets.describePurchaseStatus)
+        .replace('<<orderNumber>>', orderNumber)
+        .replace('<<status>>', status);
 
     return cleanOutput(this.positiveFiller(), response);
 };
@@ -451,6 +468,10 @@ assets.prototype.emptyCart = function() {
 
 assets.prototype.emptyWishlist = function() {
     return cleanOutput(pickVariation(speechAssets.noItemsInWishlist), this.howElseCanIHelp());
+};
+
+assets.prototype.emptyPurchases = function() {
+    return cleanOutput(pickVariation(speechAssets.noPurchases), this.howElseCanIHelp());
 };
 
 assets.prototype.fullCheckoutMessage = function(quantity, total) {
