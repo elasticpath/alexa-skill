@@ -28,15 +28,15 @@ const GetPreviousPurchaseStatusHandler = {
     canHandle({requestEnvelope}) {
         return isIntentRequestOfType(requestEnvelope, ElasticPathIntents.GET_PREVIOUS_PURCHASE_STATUS);
     },
-    handle({responseBuilder, attributesManager}) {
+    handle({responseBuilder}) {
         return new Promise((resolve, reject) => {
             Cortex.getCortexInstance()
             .cortexGetPurchases()
-            .then((items) => {            
+            .then((items) => {
                 if (items.length > 0) {
-                    let previousPurchase = items[0];
+                    const previousPurchase = items[0];
                     resolve(responseBuilder
-                        .speak(SpeechAssets.describePurchaseStatus(previousPurchase["purchase-number"], previousPurchase["status"]))
+                        .speak(SpeechAssets.describePurchaseStatus(previousPurchase["purchase-number"], previousPurchase.status))
                         .reprompt(SpeechAssets.readyToCheckOut())
                         .getResponse());
                 } else {
