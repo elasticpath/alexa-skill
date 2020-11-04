@@ -329,4 +329,15 @@ Cortex.prototype.cortexCheckout = function () {
         });
 }
 
+Cortex.prototype.cortexGetPurchases = function () {
+    return new Promise((resolve, reject) => {
+        this.cortexGet(`${this.cortexBaseUrl}?zoom=defaultprofile:purchases:element`)
+        .then((data) => {
+            const purchases = (data._defaultprofile) ? data._defaultprofile[0]._purchases[0]._element : [];
+            resolve(purchases);
+
+        }).catch((err) => reject(err));
+    });
+}
+
 module.exports = Cortex;

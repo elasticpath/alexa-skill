@@ -274,6 +274,23 @@
             "remove item {ItemNumber} from my wish list",
             "delete item {ItemNumber} from my wish list"
           ]
+        },
+        {
+          "name": "GetPreviousPurchaseStatusIntent",
+          "samples": [
+            "What is the status of my last order",
+            "What is the status of my previous order",
+            "What is the status of my recent order",
+            "What is the status of my last purchase",
+            "What is the status of my previous purchase",
+            "What is the status of my recent purchase",
+            "Tell me the status of my last order",
+            "Tell me the status of my previous order",
+            "Tell me the status of my recent order",
+            "Tell me the status of my last purchase",
+            "Tell me the status of my previous purchase",
+            "Tell me the status of my recent purchase"
+          ]
         }
       ],
       "types": [

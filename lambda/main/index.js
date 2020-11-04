@@ -34,6 +34,7 @@ const DescribeProductHandler = require('./handlers/describeproduct.handler');
 const DescribeListedProductHandler = require('./handlers/descibelistedproduct.handler');
 const GetCartHandler = require('./handlers/getcart.handler');
 const GetWishlistHandler = require('./handlers/getwishlist.handler');
+const GetPreviousPurchaseHandler = require('./handlers/getpreviouspurchase.handler');
 const HelpIntentHandler = require('./handlers/helpintent.handler');
 const KeywordSearchHandler = require('./handlers/keywordsearch.handler');
 const MoveToCartHandler= require('./handlers/movetocart.handler');
@@ -68,6 +69,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         DescribeListedProductHandler,
         GetCartHandler,
         GetWishlistHandler,
+        GetPreviousPurchaseHandler,
         HelpIntentHandler,
         KeywordSearchHandler,
         MoveToCartHandler,

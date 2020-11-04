@@ -38,6 +38,7 @@ module.exports.ElasticPathIntents = {
     DESCRIBE_LISTED_PRODUCT: 'DescribeListedProductIntent',
     DESCRIBE_PRODUCT: 'DescribeProductIntent',
     GET_CART: 'GetCartIntent',
+    GET_PREVIOUS_PURCHASE_STATUS: 'GetPreviousPurchaseStatusIntent',
     GET_WISLIST: 'GetWishlistIntent',
     KEYWORD_SEARCH: 'KeywordSearchIntent',
     MOVE_TO_CART: 'MoveToCartIntent',
